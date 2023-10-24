@@ -1,6 +1,6 @@
 from bioblend import galaxy
 from pprint import pprint
-from workflow import Workflow
+from workflow import *
 server = 'https://usegalaxy.eu/'
 api_key = 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
 #gi = galaxy.GalaxyInstance(url=server, key=api_key)
@@ -23,11 +23,10 @@ def main():
     # History which we use on the galaxy server for the workflow
     history_name = "Metatranscriptomics Coding"
 
-    gi = Workflow(server,api_key)
-    #gi.upload(file_forward,file_backward, history_name)
+    gi = Tool(server,api_key)
+    #gi.upload_file(file_forward,file_backward, history_name)
     gi.get_history_id(history_name=history_name)
     gi.preprocessing()
-
 if __name__ == '__main__':
     main()
 

@@ -1,5 +1,5 @@
 from bioblend import galaxy
-from pprint import pprint
+from pprint import pprint, PrettyPrinter
 import re
 
 class Tool:
@@ -47,25 +47,103 @@ class Tool:
         return tool_version[1]
 
     def preprocessing(self):
-        FastQC_version = self.get_newest_tool_version_and_id("FastQC")
-        tool_id = self.get_tool_id(FastQC_version)
-        #pprint(self.gi.tools.show_tool(tool_id=tool_id, io_details=True))
-        #a = self.gi.tools.show_tool(tool_id=tool_id, io_details=True)
-    
+
+        MultiQC_version = self.get_newest_tool_version_and_id("MultiQC")
+        tool_id = self.get_tool_id(MultiQC_version)
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
-        #self.gi.tools.run_tool(self.history_id, tool_id, )
-        #pprint(datasets)
+        # pprint(datasets)
         lst = []
         for dataset in datasets:
             lst.append(dataset["id"])
+
+        input_data_id_1 = '4838ba20a6d8676517bf4126fdd2dd8b'  # Replace with the actual input data ID
+        input_data_id_2 = '4838ba20a6d867651787f6001f11eacc'  # Replace with the actual input data ID
+        input_files = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        },
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_2 # Replace with the actual input data ID
+                        }
+
+                        # Add more input files as needed
+                    ]
+        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
+        inputs = {
+            'results_0|software_cond|software': 'fastqc',
+            'results_0|software_cond|output_0|input': {
+                'values': input_files
+            }
+        }
+        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+
+    def run_cutapdt(self):
+        Cutadapt_version = self.get_newest_tool_version_and_id("Cutadapt")
+        print(Cutadapt_version)
+        tool_id = self.get_tool_id(Cutadapt_version)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        lst = []
+        for dataset in datasets:
+            pprint(dataset)
+            lst.append(dataset["id"])
         input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        self.gi.tools.run_tool(self.history_id, tool_id, input_id )
+        pprint(input_id)
+        input_data_id_1 = '4838ba20a6d86765c677cabf65b7c1df'  # Replace with the actual input data ID
+        input_data_id_2 = '4838ba20a6d8676558983208f01dea12'  # Replace with the actual input data ID
+        input_file_1 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        }
+                    ]
+        input_file_2 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_2  # Replace with the actual input data ID
+                        }
+                    ]
+        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
+        inputs = {
+            'library|type': 'paired',
+            'library|input_1': {
+                'values': input_file_1
+            },
+            'library|input_2': {
+                'values': input_file_2
+            },
+            'filter_options|minimum_length': '150',
+            'read_mod_options|quality_cutoff': '0',
+            'output_selector': 'report'
+        }
+        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+    
+    def run_tool(self, tool_name):
+        FastQC_version = self.get_newest_tool_version_and_id(tool_name)
+        tool_id = self.get_tool_id(FastQC_version)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        lst = []
+        for dataset in datasets:
+            pprint(dataset)
+            lst.append(dataset["id"])
+        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        # reverse file 
+        #self.gi.tools.run_tool(self.history_id, tool_id, input_id )
+        # forward file
+        #print(len(lst))
         h1 = input_id["input_file"]
         h2 = h1["values"][0]
         d = h2.copy()
-        d["id"] = lst[1]
+        d["id"] = lst[len(lst)-1]
         h1["values"] = [d]
+        #pprint(input_id)
+        h4 = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        #pprint(h4)
         self.gi.tools.run_tool(self.history_id, tool_id, input_id )
+
+        
+
         
 # Define a custom key function to extract and compare version numbers
     def version_key(self, version):

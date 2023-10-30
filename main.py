@@ -26,7 +26,9 @@ def main():
     gi = Tool(server,api_key)
     #gi.upload_file(file_forward,file_backward, history_name)
     gi.get_history_id(history_name=history_name)
-    gi.preprocessing()
+    #gi.preprocessing()
+   # gi.run_tool("FastQC")
+    gi.run_cutapdt()
 if __name__ == '__main__':
     main()
 

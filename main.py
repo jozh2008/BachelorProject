@@ -28,7 +28,9 @@ def main():
     gi.get_history_id(history_name=history_name)
     #gi.preprocessing()
    # gi.run_tool("FastQC")
-    gi.run_cutapdt()
+    #gi.run_cutapdt()
+    #gi.run_SortMeRNA()
+    gi.run_FASTQinterlacer()
 if __name__ == '__main__':
     main()
 

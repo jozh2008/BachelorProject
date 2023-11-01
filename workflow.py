@@ -7,6 +7,7 @@ class Tool:
         self.gi = galaxy.GalaxyInstance(url = server, key = api_key)
         self.history_id =""
         pprint(self.gi)
+        pprint(self.gi.config.get_version())
 
     def upload_file(self, file1, file2):
        # get the history id to upload files
@@ -83,15 +84,16 @@ class Tool:
         Cutadapt_version = self.get_newest_tool_version_and_id("Cutadapt")
         print(Cutadapt_version)
         tool_id = self.get_tool_id(Cutadapt_version)
-        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
-        lst = []
+
+        """
         for dataset in datasets:
             pprint(dataset)
             lst.append(dataset["id"])
-        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        pprint(input_id)
-        input_data_id_1 = '4838ba20a6d86765c677cabf65b7c1df'  # Replace with the actual input data ID
-        input_data_id_2 = '4838ba20a6d8676558983208f01dea12'  # Replace with the actual input data ID
+        """
+        #input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        #pprint(input_id)
+        input_data_id_1 = '4838ba20a6d86765c677cabf65b7c1df'  # T1A_forward
+        input_data_id_2 = '4838ba20a6d8676558983208f01dea12'  # T1A_reverse
         input_file_1 = [
                         {
                             'src': 'hda',
@@ -114,11 +116,124 @@ class Tool:
                 'values': input_file_2
             },
             'filter_options|minimum_length': '150',
-            'read_mod_options|quality_cutoff': '0',
+            'read_mod_options|quality_cutoff': '20',
             'output_selector': 'report'
         }
         self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        # Update name of datasets
+        # Cutadapt Read 1 output to QC controlled forward reads
+        # Cutadapt Read 2 output to QC controlled reverse reads
+
+        dataset_id_Cutadapt_Read_1 = ""
+        dataset_id_Cutadapt_Read_2 = ""
+        for dataset in datasets:
+            if "Cutadapt" and "Read 1 Output" in dataset["name"]:
+                new_name = "QC controlled forward reads"
+                dataset_id_Cutadapt_Read_1 = dataset["id"]
+                dataset["name"] = new_name
+                self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_Cutadapt_Read_1,name=new_name)
+            elif "Cutadapt" and "Read 2 Output" in dataset["name"]:
+                new_name = "QC controlled backwards reads"
+                dataset_id_Cutadapt_Read_2 = dataset["id"]
+                dataset["name"] = new_name
+                self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_Cutadapt_Read_2,name=new_name)
+
+    def run_SortMeRNA(self):
+        SortMeRNA_version = self.get_newest_tool_version_and_id("Filter with SortMeRNA")
+        print(SortMeRNA_version)
+        tool_id = self.get_tool_id(SortMeRNA_version)
+        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        pprint(input_id)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        input_data_id_1 = ''  # T1A_forward
+        input_data_id_2 = ''  # T1A_reverse
+        for dataset in datasets:
+            if dataset["name"] == "QC controlled forward reads":
+                input_data_id_1 = dataset["id"]
+            if dataset["name"] == "QC controlled backwards reads":
+                input_data_id_2 = dataset["id"]
+
+        input_file_1 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        }
+                    ]
+        input_file_2 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_2  # Replace with the actual input data ID
+                        }
+                    ]
+        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
+        #database_table_name = "rRNA_databases"
+        #database_table = self.gi.tool_data.show_data_table(database_table_name)
+        #pprint(database_table)
+        #data_tables = self.gi.tool_data.get_data_tables()
+
+        #database_table = self.gi.tool_data.show_data_table(data_table_id)
+        #pprint(database_table)
+        inputs = {
+            'sequencing_type|sequencing_type_selector': 'paired',
+            'sequencing_type|forward_reads': {
+                'values': input_file_1
+            },
+            'sequencing_type|reverse_reads': {
+                'values': input_file_2
+            },
+            'sequencing_type|paired_type': '--paired_out',
+            'databases_type|databases_selector': 'cached',
+            'databases_type|input_databases': ['2.1b-silva-arc-16s-id95','2.1b-silva-euk-28s-id98','2.1b-silva-euk-18s-id95','2.1b-silva-bac-23s-id98','2.1b-silva-bac-16s-id90','2.1b-rfam-5.8s-database-id98','2.1b-rfam-5s-database-id98','2.1b-silva-arc-23s-id98'],
+            'aligned_fastx|other': 'True',
+            'log': 'True'
+        }
+        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
     
+    def run_FASTQinterlacer(self):
+        FASTQ_interlacer_version = self.get_newest_tool_version_and_id("FASTQ interlacer")
+        print(FASTQ_interlacer_version)
+        tool_id = self.get_tool_id(FASTQ_interlacer_version)
+        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        pprint(input_id)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        input_data_id_1 = ''  # unaligend forward reads
+        input_data_id_2 = ''  # unaligned reverse reads
+        for dataset in datasets:
+            if "Unaligned forward reads" and "SortMeRNA" in dataset["name"]:
+                input_data_id_1 = dataset["id"]
+            if "Unaligned reverse reads" and "SortMeRNA" in dataset["name"]:
+                input_data_id_2 = dataset["id"]
+        
+        input_file_1 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        }
+                    ]
+        input_file_2 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_2  # Replace with the actual input data ID
+                        }
+                    ]
+        
+        inputs = {
+            'reads|input1_file': {
+                'values': input_file_1
+            },
+            'reads|input2_file': {
+                'values': input_file_2
+            },
+            
+        }
+        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        for dataset in datasets:
+            if "FASTQ interlacer pairs" in dataset["name"]:
+                self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset["id"],name="Interlaced non rRNA reads")
+
+
+
     def run_tool(self, tool_name):
         FastQC_version = self.get_newest_tool_version_and_id(tool_name)
         tool_id = self.get_tool_id(FastQC_version)
@@ -141,7 +256,7 @@ class Tool:
         h4 = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         #pprint(h4)
         self.gi.tools.run_tool(self.history_id, tool_id, input_id )
-
+        
         
 
         

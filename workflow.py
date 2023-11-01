@@ -19,7 +19,6 @@ class Tool:
     # for a given tool, give back the latest version and the id of this tool
     def get_newest_tool_version_and_id(self, tool_name):
         tools = (self.gi.tools.get_tools(name=tool_name))
-        #pprint(tools)
         lst_version = [] # list to save all version of this tool
         lst2 = [] # 
         for tool in tools:
@@ -53,9 +52,6 @@ class Tool:
         tool_id = self.get_tool_id(MultiQC_version)
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         # pprint(datasets)
-        lst = []
-        for dataset in datasets:
-            lst.append(dataset["id"])
 
         input_data_id_1 = '4838ba20a6d8676517bf4126fdd2dd8b'  # Replace with the actual input data ID
         input_data_id_2 = '4838ba20a6d867651787f6001f11eacc'  # Replace with the actual input data ID
@@ -82,14 +78,8 @@ class Tool:
 
     def run_cutapdt(self):
         Cutadapt_version = self.get_newest_tool_version_and_id("Cutadapt")
-        print(Cutadapt_version)
+        #print(Cutadapt_version)
         tool_id = self.get_tool_id(Cutadapt_version)
-
-        """
-        for dataset in datasets:
-            pprint(dataset)
-            lst.append(dataset["id"])
-        """
         #input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         #pprint(input_id)
         input_data_id_1 = '4838ba20a6d86765c677cabf65b7c1df'  # T1A_forward
@@ -166,14 +156,6 @@ class Tool:
                             'id': input_data_id_2  # Replace with the actual input data ID
                         }
                     ]
-        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
-        #database_table_name = "rRNA_databases"
-        #database_table = self.gi.tool_data.show_data_table(database_table_name)
-        #pprint(database_table)
-        #data_tables = self.gi.tool_data.get_data_tables()
-
-        #database_table = self.gi.tool_data.show_data_table(data_table_id)
-        #pprint(database_table)
         inputs = {
             'sequencing_type|sequencing_type_selector': 'paired',
             'sequencing_type|forward_reads': {
@@ -192,18 +174,22 @@ class Tool:
     
     def run_FASTQinterlacer(self):
         FASTQ_interlacer_version = self.get_newest_tool_version_and_id("FASTQ interlacer")
-        print(FASTQ_interlacer_version)
+        #print(FASTQ_interlacer_version)
         tool_id = self.get_tool_id(FASTQ_interlacer_version)
-        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        pprint(input_id)
+        #input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        #pprint(input_id)
         input_data_id_1 = ''  # unaligend forward reads
         input_data_id_2 = ''  # unaligned reverse reads
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         for dataset in datasets:
-            if "Unaligned forward reads" and "SortMeRNA" in dataset["name"]:
+            if "Unaligned forward reads"  in dataset["name"] and "SortMeRNA" in dataset["name"]:
                 input_data_id_1 = dataset["id"]
-            if "Unaligned reverse reads" and "SortMeRNA" in dataset["name"]:
+                pprint(input_data_id_1)
+                pprint(dataset["name"])
+            if "Unaligned reverse reads"  in dataset["name"] and "SortMeRNA" in dataset["name"]:
                 input_data_id_2 = dataset["id"]
+                pprint(input_data_id_2)
+                pprint(dataset["name"])
         
         input_file_1 = [
                         {
@@ -248,8 +234,11 @@ class Tool:
         for dataset in datasets:
             if "QC controlled forward reads" in dataset["name"]:
                 input_data_id_1 = dataset["id"]
+                pprint(dataset["id"])
+                pprint(dataset["name"])
             if "QC controlled reverse reads" in dataset["name"]:
                 pprint(dataset["id"])
+                pprint(dataset["name"])
                 input_data_id_2 = dataset["id"]
         
         input_file_1 = [
@@ -270,7 +259,7 @@ class Tool:
             'inputs|in|raw_in|in_f': {
                 'values': input_file_1
             },
-            'inputs|in|raw_in|in_b': {
+            'inputs|in|raw_in|in_r': {
                 'values': input_file_2
             },
             'analysis': {
@@ -282,6 +271,8 @@ class Tool:
                 },
                 'stat_q':'0.1'
             },
+            'analysis|analysis_type|tax_lev|split_levels': 'True',
+            'analysis|stat_q':'0.1',
             'out|krona_output' :'True'   
         }
         self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
@@ -294,10 +285,73 @@ class Tool:
         pprint(input_id)
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))        
         input_data_id_1 = ''  # Interlaced non rRNA reads 
+        input_data_id_2 = ''  # Interlaced non rRNA reads 
         for dataset in datasets:
-            if "QC controlled forward reads" in dataset["name"]:
+            if "Interlaced non rRNA reads" == dataset["name"]:
                 input_data_id_1 = dataset["id"]
-                break
+            if "Predicted taxon relative abundances" in dataset["name"] and "Krona" not in dataset["name"] and "taxonomic levels" not in dataset["name"]:
+                input_data_id_2 = dataset["id"]
+                #pprint(dataset["name"])
+
+        input_file_1 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        }
+                    ]
+        input_file_2 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_2  # Replace with the actual input data ID
+                        }
+                    ]
+        inputs = {
+            'in|input': {
+                'values': input_file_1
+            },
+            'wf|selector|':'bypass_taxonomic_profiling',
+            'wf|bypass_taxonomic_profiling|--taxonomic-profile': {
+                'values': input_file_2
+            },
+            'wf|nucleotide_search|nucleotide_db|nucleotide_database': 'chocophlan-full-3.6.0-29032023',
+            'wf|translated_search|protein_db|protein_database': 'uniref-uniref90_diamond-3.0.0-13052021' 
+        }
+        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+
+    def run_Renormalize(self):
+        Renormalize_version = self.get_newest_tool_version_and_id("Renormalize")
+        print(Renormalize_version)
+        tool_id = self.get_tool_id(Renormalize_version)
+        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        pprint(input_id)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        input_data_id_1 = ''  # Interlaced non rRNA reads
+        for dataset in datasets:
+            if "Gene families and their abundance" in dataset["name"]:
+                input_data_id_1 = dataset["id"]
+                pprint(dataset["name"])
+        
+        input_file_1 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        }
+                    ]
+        inputs = {
+            'input': {
+                'values': input_file_1
+            },
+            'units': 'relab',
+        }
+        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        for dataset in datasets:
+            if "Renormalize" in dataset["name"]:
+                pprint("test")
+                dataset_id_FASTQ_interlacer_pairs =dataset["id"]
+                self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_FASTQ_interlacer_pairs,name="Normalized gene families")
+
+
 
     def run_tool(self, tool_name):
         FastQC_version = self.get_newest_tool_version_and_id(tool_name)
@@ -305,13 +359,11 @@ class Tool:
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         lst = []
         for dataset in datasets:
-            pprint(dataset)
+            #pprint(dataset)
             lst.append(dataset["id"])
         input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         # reverse file 
-        #self.gi.tools.run_tool(self.history_id, tool_id, input_id )
         # forward file
-        #print(len(lst))
         h1 = input_id["input_file"]
         h2 = h1["values"][0]
         d = h2.copy()
@@ -319,7 +371,6 @@ class Tool:
         h1["values"] = [d]
         #pprint(input_id)
         h4 = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        #pprint(h4)
         self.gi.tools.run_tool(self.history_id, tool_id, input_id )
         
         

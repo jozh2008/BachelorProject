@@ -31,8 +31,9 @@ def main():
     #gi.run_cutapdt()
     #gi.run_SortMeRNA()
     #gi.run_FASTQinterlacer()
-    gi.run_MetaPhlAn()
+    #gi.run_MetaPhlAn()
     #gi.run_HUMAnN()
+    #gi.run_Renormalize()
 if __name__ == '__main__':
     main()
 

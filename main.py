@@ -30,7 +30,8 @@ def main():
    # gi.run_tool("FastQC")
     #gi.run_cutapdt()
     #gi.run_SortMeRNA()
-    gi.run_FASTQinterlacer()
+    #gi.run_FASTQinterlacer()
+    gi.run_MetaPhlAn()
 if __name__ == '__main__':
     main()
 

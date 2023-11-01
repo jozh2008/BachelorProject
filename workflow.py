@@ -232,7 +232,12 @@ class Tool:
             if "FASTQ interlacer pairs" in dataset["name"]:
                 self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset["id"],name="Interlaced non rRNA reads")
 
-
+    def run_MetaPhlAn(self):
+        MetaPhlAn_version = self.get_newest_tool_version_and_id("MetaPhlAn")
+        print(MetaPhlAn_version)
+        tool_id = self.get_tool_id(MetaPhlAn_version)
+        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        pprint(input_id)
 
     def run_tool(self, tool_name):
         FastQC_version = self.get_newest_tool_version_and_id(tool_name)

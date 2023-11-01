@@ -32,6 +32,7 @@ def main():
     #gi.run_SortMeRNA()
     #gi.run_FASTQinterlacer()
     gi.run_MetaPhlAn()
+    #gi.run_HUMAnN()
 if __name__ == '__main__':
     main()
 

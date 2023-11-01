@@ -151,7 +151,7 @@ class Tool:
         for dataset in datasets:
             if dataset["name"] == "QC controlled forward reads":
                 input_data_id_1 = dataset["id"]
-            if dataset["name"] == "QC controlled backwards reads":
+            if dataset["name"] == "QC controlled reverse reads":
                 input_data_id_2 = dataset["id"]
 
         input_file_1 = [
@@ -196,9 +196,9 @@ class Tool:
         tool_id = self.get_tool_id(FASTQ_interlacer_version)
         input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         pprint(input_id)
-        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         input_data_id_1 = ''  # unaligend forward reads
         input_data_id_2 = ''  # unaligned reverse reads
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         for dataset in datasets:
             if "Unaligned forward reads" and "SortMeRNA" in dataset["name"]:
                 input_data_id_1 = dataset["id"]
@@ -228,16 +228,76 @@ class Tool:
             
         }
         self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        dataset_id_FASTQ_interlacer_pairs = ""
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         for dataset in datasets:
             if "FASTQ interlacer pairs" in dataset["name"]:
-                self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset["id"],name="Interlaced non rRNA reads")
+                pprint("test")
+                dataset_id_FASTQ_interlacer_pairs =dataset["id"]
+                self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_FASTQ_interlacer_pairs,name="Interlaced non rRNA reads")
 
     def run_MetaPhlAn(self):
         MetaPhlAn_version = self.get_newest_tool_version_and_id("MetaPhlAn")
-        print(MetaPhlAn_version)
+        #print(MetaPhlAn_version)
         tool_id = self.get_tool_id(MetaPhlAn_version)
         input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         pprint(input_id)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        input_data_id_1 = ''  # QC controlled forward reads
+        input_data_id_2 = ''  # QC controlled backward reads
+        for dataset in datasets:
+            if "QC controlled forward reads" in dataset["name"]:
+                input_data_id_1 = dataset["id"]
+            if "QC controlled reverse reads" in dataset["name"]:
+                pprint(dataset["id"])
+                input_data_id_2 = dataset["id"]
+        
+        input_file_1 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        }
+                    ]
+        input_file_2 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_2  # Replace with the actual input data ID
+                        }
+                    ]
+        
+        inputs = {
+            'inputs|in|raw_in|selector': 'paired',
+            'inputs|in|raw_in|in_f': {
+                'values': input_file_1
+            },
+            'inputs|in|raw_in|in_b': {
+                'values': input_file_2
+            },
+            'analysis': {
+                'analysis_type':{
+                    'tax_lev':{
+                        'split_levels': 'True'
+                    }
+                
+                },
+                'stat_q':'0.1'
+            },
+            'out|krona_output' :'True'   
+        }
+        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+
+    def run_HUMAnN(self):
+        HUMAnN_version = self.get_newest_tool_version_and_id("HUMAnN")
+        print(HUMAnN_version)
+        tool_id = self.get_tool_id(HUMAnN_version)
+        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        pprint(input_id)
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))        
+        input_data_id_1 = ''  # Interlaced non rRNA reads 
+        for dataset in datasets:
+            if "QC controlled forward reads" in dataset["name"]:
+                input_data_id_1 = dataset["id"]
+                break
 
     def run_tool(self, tool_name):
         FastQC_version = self.get_newest_tool_version_and_id(tool_name)

@@ -6,14 +6,18 @@ class Tool:
     def __init__(self, server, api_key) -> None:
         self.gi = galaxy.GalaxyInstance(url = server, key = api_key)
         self.history_id =""
-        pprint(self.gi)
-        pprint(self.gi.config.get_version())
+        #pprint(self.gi)
+        #pprint(self.gi.config.get_version())
 
     def upload_file(self, file1, file2):
        # get the history id to upload files
+       # pprint(self.history_id)
 
-       self.gi.tools.upload_file(path=file1, history_id=self.get_history_id, file_name="T1A_forward")
-       self.gi.tools.upload_file(path=file2, history_id=self.get_history_id, file_name="T1A_reverse")
+       job = self.gi.tools.upload_file(path=file1, history_id=self.history_id,file_name="T1A_forward")
+       job_id = job["jobs"][0]["id"]
+       self.gi.jobs.wait_for_job(job_id=job_id)
+       job = self.gi.tools.upload_file(path=file2, history_id=self.history_id, file_name="T1A_reverse")
+       return job["jobs"][0]["id"]
 
 
     # for a given tool, give back the latest version and the id of this tool
@@ -38,23 +42,37 @@ class Tool:
     # calculates the history_id for a given history name
     def get_history_id(self, history_name):
         history = self.gi.histories.get_histories(name = history_name)
-        # pprint(history)
+        ##pprint(history)
         history_id = history[0]["id"]
         self.history_id = history_id
     
+    def create_history(self, history_name):
+        histories = self.gi.histories.get_histories() 
+        #self.gi.histories.create_history(history_name)
+        #pprint(histories)
+        if histories[0]["name"] == history_name:
+            self.gi.histories.delete_history(histories[0]["id"])
+        self.gi.histories.create_history(history_name)
+            
     # return just the tool_id of latest version
     def get_tool_id(self, tool_version):
         return tool_version[1]
 
-    def preprocessing(self):
-
+    def run_MultiQC(self):
+        # get latest release of the tool
         MultiQC_version = self.get_newest_tool_version_and_id("MultiQC")
+        # get the tool Id of this release
         tool_id = self.get_tool_id(MultiQC_version)
+        # get all datasets in the history, which are not deleted
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
-        # pprint(datasets)
+        lst = []
+        # calculate the dataset id  of the dataset, which is needed for the next steps
+        for dataset in datasets:
+            if "RawData" in dataset["name"]:
+                lst.append(dataset["id"])
 
-        input_data_id_1 = '4838ba20a6d8676517bf4126fdd2dd8b'  # Replace with the actual input data ID
-        input_data_id_2 = '4838ba20a6d867651787f6001f11eacc'  # Replace with the actual input data ID
+        input_data_id_1 = lst[1]  # Replace with the actual input data ID
+        input_data_id_2 = lst[0]  # Replace with the actual input data ID
         input_files = [
                         {
                             'src': 'hda',
@@ -74,16 +92,25 @@ class Tool:
                 'values': input_files
             }
         }
-        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        #run tool
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        return job["jobs"][0]["id"]
 
     def run_cutapdt(self):
         Cutadapt_version = self.get_newest_tool_version_and_id("Cutadapt")
-        #print(Cutadapt_version)
         tool_id = self.get_tool_id(Cutadapt_version)
-        #input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        #pprint(input_id)
-        input_data_id_1 = '4838ba20a6d86765c677cabf65b7c1df'  # T1A_forward
-        input_data_id_2 = '4838ba20a6d8676558983208f01dea12'  # T1A_reverse
+        input_data_id_1 = ''  # T1A_forward
+        input_data_id_2 = ''  # T1A_backward
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        for dataset in datasets:
+            if "T1A_forward" == dataset["name"]:
+                input_data_id_1 = dataset["id"]
+                pprint(input_data_id_1)
+                pprint(dataset["name"])
+            if "T1A_reverse" == dataset["name"]:
+                input_data_id_2 = dataset["id"]
+                pprint(input_data_id_2)
+                pprint(dataset["name"])
         input_file_1 = [
                         {
                             'src': 'hda',
@@ -109,7 +136,7 @@ class Tool:
             'read_mod_options|quality_cutoff': '20',
             'output_selector': 'report'
         }
-        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         # Update name of datasets
         # Cutadapt Read 1 output to QC controlled forward reads
@@ -124,10 +151,11 @@ class Tool:
                 dataset["name"] = new_name
                 self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_Cutadapt_Read_1,name=new_name)
             elif "Cutadapt" and "Read 2 Output" in dataset["name"]:
-                new_name = "QC controlled backwards reads"
+                new_name = "QC controlled reverse reads"
                 dataset_id_Cutadapt_Read_2 = dataset["id"]
                 dataset["name"] = new_name
                 self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_Cutadapt_Read_2,name=new_name)
+        return job["jobs"][0]["id"]
 
     def run_SortMeRNA(self):
         SortMeRNA_version = self.get_newest_tool_version_and_id("Filter with SortMeRNA")
@@ -136,8 +164,8 @@ class Tool:
         input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         pprint(input_id)
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
-        input_data_id_1 = ''  # T1A_forward
-        input_data_id_2 = ''  # T1A_reverse
+        input_data_id_1 = ''  # QC controlled forward reads
+        input_data_id_2 = ''  # QC controlled reverse reads
         for dataset in datasets:
             if dataset["name"] == "QC controlled forward reads":
                 input_data_id_1 = dataset["id"]
@@ -170,14 +198,12 @@ class Tool:
             'aligned_fastx|other': 'True',
             'log': 'True'
         }
-        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        return job["jobs"][0]["id"]
     
     def run_FASTQinterlacer(self):
         FASTQ_interlacer_version = self.get_newest_tool_version_and_id("FASTQ interlacer")
-        #print(FASTQ_interlacer_version)
         tool_id = self.get_tool_id(FASTQ_interlacer_version)
-        #input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        #pprint(input_id)
         input_data_id_1 = ''  # unaligend forward reads
         input_data_id_2 = ''  # unaligned reverse reads
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
@@ -213,7 +239,7 @@ class Tool:
             },
             
         }
-        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
         dataset_id_FASTQ_interlacer_pairs = ""
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         for dataset in datasets:
@@ -221,6 +247,7 @@ class Tool:
                 pprint("test")
                 dataset_id_FASTQ_interlacer_pairs =dataset["id"]
                 self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_FASTQ_interlacer_pairs,name="Interlaced non rRNA reads")
+        return job["jobs"][0]["id"]
 
     def run_MetaPhlAn(self):
         MetaPhlAn_version = self.get_newest_tool_version_and_id("MetaPhlAn")
@@ -275,7 +302,8 @@ class Tool:
             'analysis|stat_q':'0.1',
             'out|krona_output' :'True'   
         }
-        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        return job["jobs"][0]["id"]
 
     def run_HUMAnN(self):
         HUMAnN_version = self.get_newest_tool_version_and_id("HUMAnN")
@@ -316,7 +344,8 @@ class Tool:
             'wf|nucleotide_search|nucleotide_db|nucleotide_database': 'chocophlan-full-3.6.0-29032023',
             'wf|translated_search|protein_db|protein_database': 'uniref-uniref90_diamond-3.0.0-13052021' 
         }
-        self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs)
+        return job["jobs"][0]["id"]
 
     def run_Renormalize(self):
         Renormalize_version = self.get_newest_tool_version_and_id("Renormalize")
@@ -364,17 +393,53 @@ class Tool:
         input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         # reverse file 
         # forward file
-        h1 = input_id["input_file"]
-        h2 = h1["values"][0]
-        d = h2.copy()
-        d["id"] = lst[len(lst)-1]
-        h1["values"] = [d]
         #pprint(input_id)
-        h4 = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        self.gi.tools.run_tool(self.history_id, tool_id, input_id )
+        input_data_id_1 = ''  # T1A_forward
+        input_data_id_2 = ''  # T1A_backward
+        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
+        for dataset in datasets:
+            if "T1A_forward" == dataset["name"]:
+                input_data_id_1 = dataset["id"]
+                pprint(input_data_id_1)
+                pprint(dataset["name"])
+            if "T1A_reverse" == dataset["name"]:
+                input_data_id_2 = dataset["id"]
+                pprint(input_data_id_2)
+                pprint(dataset["name"])
         
+        input_file_1 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_1  # Replace with the actual input data ID
+                        }
+                    ]
+        input_file_2 = [
+                        {
+                            'src': 'hda',
+                            'id': input_data_id_2  # Replace with the actual input data ID
+                        }
+                    ]
         
-
+        inputs_1 = {
+            'input_file': {
+                'values': input_file_1
+            }
+        }
+        inputs_2 = { 
+            'input_file': {
+                'values': input_file_2
+            },
+            
+        }
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs_1)
+        job_id = job["jobs"][0]["id"]
+        self.gi.jobs.wait_for_job(job_id)
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id,tool_inputs=inputs_2)
+        return job["jobs"][0]["id"]
+        
+     # wait until job is done, cause tools are dependent of each other   
+    def wait_for_job(self, job_id):
+        self.gi.jobs.wait_for_job(job_id=job_id)
         
 # Define a custom key function to extract and compare version numbers
     def version_key(self, version):

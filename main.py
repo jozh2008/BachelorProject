@@ -1,9 +1,9 @@
 from bioblend import galaxy
 from pprint import pprint
 from workflow import *
-server = 'https://usegalaxy.eu/'
-api_key = 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
-#gi = galaxy.GalaxyInstance(url=server, key=api_key)
+#server = 'https://usegalaxy.eu/'
+#api_key = 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
+#vgi = galaxy.GalaxyInstance(url=server, key=api_key)
 #pprint(gi)
 #pprint(gi.histories.get_histories())
 
@@ -21,19 +21,31 @@ def main():
     file_backward = "Upload_files/T1A_reverse.fastqsanger"
 
     # History which we use on the galaxy server for the workflow
-    history_name = "Metatranscriptomics Coding"
+    history_name = "Metatranscriptomics Coding 3"
+    #vgi.tools.upload_file(file_forward,'f11364bf29a5652d')
 
     gi = Tool(server,api_key)
     #gi.upload_file(file_forward,file_backward, history_name)
+    gi.create_history(history_name=history_name)
     gi.get_history_id(history_name=history_name)
-    #gi.preprocessing()
-   # gi.run_tool("FastQC")
-    #gi.run_cutapdt()
-    #gi.run_SortMeRNA()
-    #gi.run_FASTQinterlacer()
-    #gi.run_MetaPhlAn()
-    #gi.run_HUMAnN()
-    #gi.run_Renormalize()
+    #gi.test(file_backward)
+    job=gi.upload_file(file_forward,file_backward)
+    gi.wait_for_job(job)
+    job = gi.run_tool("FastQC")
+    gi.wait_for_job(job)
+    job = gi.run_MultiQC()
+    gi.wait_for_job(job)
+    job = gi.run_cutapdt()
+    gi.wait_for_job(job)
+    job =gi.run_SortMeRNA()
+    gi.wait_for_job(job)
+    job = gi.run_FASTQinterlacer()
+    gi.wait_for_job(job)
+    job = gi.run_MetaPhlAn()
+    gi.wait_for_job(job)
+    job = gi.run_HUMAnN()
+    gi.wait_for_job(job)
+    job = gi.run_Renormalize()
 if __name__ == '__main__':
     main()
 

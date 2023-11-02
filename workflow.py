@@ -6,12 +6,8 @@ class Tool:
     def __init__(self, server, api_key) -> None:
         self.gi = galaxy.GalaxyInstance(url = server, key = api_key)
         self.history_id =""
-        #pprint(self.gi)
-        #pprint(self.gi.config.get_version())
 
     def upload_file(self, file1, file2):
-       # get the history id to upload files
-       # pprint(self.history_id)
 
        job = self.gi.tools.upload_file(path=file1, history_id=self.history_id,file_name="T1A_forward")
        job_id = job["jobs"][0]["id"]
@@ -22,34 +18,43 @@ class Tool:
 
     # for a given tool, give back the latest version and the id of this tool
     def get_newest_tool_version_and_id(self, tool_name):
-        tools = (self.gi.tools.get_tools(name=tool_name))
-        lst_version = [] # list to save all version of this tool
-        lst2 = [] # 
+        # Get a list of tools with the specified name
+        tools = self.gi.tools.get_tools(name=tool_name)
+        
+        # Create a dictionary to store tool versions and associated galaxy versions
+        tool_versions = {}
+        
+        # Iterate through the list of tools
         for tool in tools:
-            lst_version.append(tool["version"])
-        a = (self.version_key_modified(lst_version))
-        newest_version = max(list(a.keys()), key=self.version_key)
-        lst2 = a[newest_version]
-        res = newest_version + sorted(lst2,reverse=True)[0]
+            # Extract numeric components from the version string
+            version_parts = re.findall(r'\d+', tool["version"])
+            
+            # If version_parts is not empty, the last component is the galaxy version
+            galaxy_version = version_parts[-1] if version_parts else ""
+            
+            # Store the tool version and associated galaxy version in the dictionary
+            tool_versions[tool["version"]] = galaxy_version
+        
+        # Find the newest version based on the version numbers
+        newest_version = max(tool_versions, key=self.version_key)
+        
+        # Retrieve the tool ID of the newest version
+        tool_id = next(tool["id"] for tool in tools if tool["version"] == newest_version)
+        
+        # Return the newest version and tool ID
+        return newest_version, tool_id
 
-        tool_id = ""
-        for tool in tools:
-            if res == tool["version"]:
-                tool_id =tool["id"]
 
-        return (res,tool_id) # s
-    
+
     # calculates the history_id for a given history name
     def get_history_id(self, history_name):
         history = self.gi.histories.get_histories(name = history_name)
-        ##pprint(history)
         history_id = history[0]["id"]
         self.history_id = history_id
     
     def create_history(self, history_name):
         histories = self.gi.histories.get_histories() 
-        #self.gi.histories.create_history(history_name)
-        #pprint(histories)
+        # delete if history already exists
         if histories[0]["name"] == history_name:
             self.gi.histories.delete_history(histories[0]["id"])
         self.gi.histories.create_history(history_name)
@@ -159,7 +164,7 @@ class Tool:
 
     def run_SortMeRNA(self):
         SortMeRNA_version = self.get_newest_tool_version_and_id("Filter with SortMeRNA")
-        print(SortMeRNA_version)
+        #print(SortMeRNA_version)
         tool_id = self.get_tool_id(SortMeRNA_version)
         input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         pprint(input_id)
@@ -244,7 +249,7 @@ class Tool:
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         for dataset in datasets:
             if "FASTQ interlacer pairs" in dataset["name"]:
-                pprint("test")
+                #pprint("test")
                 dataset_id_FASTQ_interlacer_pairs =dataset["id"]
                 self.gi.histories.update_dataset(history_id=self.history_id,dataset_id=dataset_id_FASTQ_interlacer_pairs,name="Interlaced non rRNA reads")
         return job["jobs"][0]["id"]
@@ -253,19 +258,19 @@ class Tool:
         MetaPhlAn_version = self.get_newest_tool_version_and_id("MetaPhlAn")
         #print(MetaPhlAn_version)
         tool_id = self.get_tool_id(MetaPhlAn_version)
-        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        pprint(input_id)
+        #input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
+        #pprint(input_id)
         datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
         input_data_id_1 = ''  # QC controlled forward reads
         input_data_id_2 = ''  # QC controlled backward reads
         for dataset in datasets:
             if "QC controlled forward reads" in dataset["name"]:
                 input_data_id_1 = dataset["id"]
-                pprint(dataset["id"])
-                pprint(dataset["name"])
+                #pprint(dataset["id"])
+                #pprint(dataset["name"])
             if "QC controlled reverse reads" in dataset["name"]:
-                pprint(dataset["id"])
-                pprint(dataset["name"])
+                #pprint(dataset["id"])
+                #pprint(dataset["name"])
                 input_data_id_2 = dataset["id"]
         
         input_file_1 = [
@@ -385,12 +390,6 @@ class Tool:
     def run_tool(self, tool_name):
         FastQC_version = self.get_newest_tool_version_and_id(tool_name)
         tool_id = self.get_tool_id(FastQC_version)
-        datasets=(self.gi.datasets.get_datasets(history_id=self.history_id,deleted=False))
-        lst = []
-        for dataset in datasets:
-            #pprint(dataset)
-            lst.append(dataset["id"])
-        input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
         # reverse file 
         # forward file
         #pprint(input_id)
@@ -446,31 +445,5 @@ class Tool:
         # Split the version string into components and convert them to integers
         parts = [int(part) for part in re.findall(r'\d+', version)]
         return tuple(parts)
-
-
-    def version_key_modified(self, version):
-        """
-        version has the following format:
-            X.XX.XX+galaxyX
-        so to get the latest version, we need split the verion into numbers, and the +galaxy
-        i.e 3.07.2+galaxy1 will the key be 3.07.2 and the value galaxy1
-        we save everything in a dictionary
-        """
-        d = dict()
-        helperKey = ""
-        helperValue = ""
-        for ver in version:
-            position = ver.find("+") # postion of +, cause seperator
-            if position != -1: # if -1 then there is no +galaxy part
-                helperKey = ver[:position]
-                helperValue = ver[position:]
-            else:
-                helperKey = ver
-                helperValue = ""
-            if helperKey not in d:
-                d[helperKey] = [helperValue]
-            else:
-                d[helperKey]= d[helperKey] + [helperValue]
-        return(d)
 
 

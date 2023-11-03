@@ -1,0 +1,9 @@
+validate:
+  - python
+
+python:
+  enabled: true
+  files:
+    - "**/*.py"
+  rules:
+    - flake8

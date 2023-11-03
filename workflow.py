@@ -57,6 +57,7 @@ class Tool:
         if histories[0]["name"] == history_name:
             self.gi.histories.delete_history(histories[0]["id"])
         self.gi.histories.create_history(history_name)
+       
             
     # return just the tool_id of latest version
     def get_tool_id(self, tool_version):

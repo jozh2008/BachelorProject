@@ -21,4 +21,12 @@ jobs:
           DEFAULT_BRANCH: main
           VALIDATE_PYTHON_FLAKE8: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+        validate:
+          - python
+        python:
+          enabled: true
+          files:
+            - "workflow.py"
+          rules:
+            - flake8
+

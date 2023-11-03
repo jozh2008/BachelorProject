@@ -62,6 +62,7 @@ class Tool:
     def get_tool_id(self, tool_version):
         return tool_version[1]
 
+ 
     def run_MultiQC(self):
         # get latest release of the tool
         MultiQC_version = self.get_newest_tool_version_and_id("MultiQC")

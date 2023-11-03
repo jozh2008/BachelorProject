@@ -7,15 +7,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-    - name: Super-Linter
-      # You may pin to the exact commit or the version.
-      # uses: super-linter/super-linter@35c3fa445cc217dfcc7b53eeb4e7aa95fcdd02fc
-      uses: super-linter/super-linter@v5.6.1
-      env:
-              VALIDATE_ALL_CODEBASE: false
-              DEFAULT_BRANCH: main
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              VALIDATE_PYTHON_FLAKE8: True
+      - name: Super-Linter
+        # You may pin to the exact commit or the version.
+        # uses: super-linter/super-linter@35c3fa445cc217dfcc7b53eeb4e7aa95fcdd02fc
+        uses: super-linter/super-linter@v5.6.1
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_PYTHON_FLAKE8: true

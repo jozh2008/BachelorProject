@@ -8,7 +8,6 @@ class Tool:
         self.history_id =""
 
     def upload_file(self, file1, file2):
-
        job = self.gi.tools.upload_file(path=file1, history_id=self.history_id,file_name="T1A_forward")
        job_id = job["jobs"][0]["id"]
        self.gi.jobs.wait_for_job(job_id=job_id)

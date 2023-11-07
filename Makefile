@@ -1,5 +1,5 @@
 FLAKE8 := flake8
-FLAKE8_CONFIG := .github/.flake8  # Change this to the path of your .flake8 configuration file
+FLAKE8_CONFIG := .github/linters/.flake8  # Change this to the path of your .flake8 configuration file
 
 all: compile test checkstyle
 

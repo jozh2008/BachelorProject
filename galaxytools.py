@@ -10,6 +10,8 @@ class Tool:
     def __init__(self, server, api_key) -> None:
         self.gi = galaxy.GalaxyInstance(url=server, key=api_key)
         self.history_id = ""
+        self.tool_id = ""
+        self.input_files = []
     
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -71,7 +73,8 @@ class Tool:
         # delete if history already exists
         if histories[0]["name"] == history_name:
             self.gi.histories.delete_history(histories[0]["id"])
-        self.gi.histories.create_history(history_name)
+        history = self.gi.histories.create_history(history_name)
+        self.history_id = history["id"]
 
     # return just the tool_id of latest version
     def get_tool_id(self, tool_version):
@@ -86,14 +89,42 @@ class Tool:
         # Split the version string into components and convert them to integers
         parts = [int(part) for part in re.findall(r'\d+', version)]
         return tuple(parts)
+
+    def get_Datasetnames(self):
+        pass
+
+    def get_Inputs(self):
+        pass
     
-    def run_tool_with_two_Inputfiles(self, tool_name):
+    def run_tool_with_one_Inputfile(self, tool_name, datasets_name):
         version = self.get_newest_tool_version_and_id(tool_name)
-        tool_id = self.get_tool_id(version)
+        self.tool_id = self.get_tool_id(version)
         input_data_id_1 = ''  # 
         input_data_id_2 = ''  # 
-        dataset_name1,dataset_name2 = self.get_Datasetnames_FastQC()
+        dataset_name1,dataset_name2 = datasets_name
         datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
+        pprint(len(datasets))
+        for dataset in datasets:
+            if dataset_name1 == dataset["name"]:
+                input_data_id_1 = dataset["id"]
+                pprint(input_data_id_1)
+                pprint(dataset["name"])
+            if dataset_name2 == dataset["name"]:
+                input_data_id_2 = dataset["id"]
+                pprint(input_data_id_2)
+                pprint(dataset["name"])
+
+
+    def run_tool_with_two_Inputfiles(self, tool_name, datasets_name):
+        version = self.get_newest_tool_version_and_id(tool_name)
+        self.tool_id = self.get_tool_id(version)
+        input_data_id_1 = ''  # 
+        input_data_id_2 = ''  # 
+        dataset_name1,dataset_name2 = datasets_name
+        pprint(dataset_name1)
+        pprint(self.history_id)
+        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
+        pprint(len(datasets))
         for dataset in datasets:
             if dataset_name1 == dataset["name"]:
                 input_data_id_1 = dataset["id"]
@@ -116,14 +147,88 @@ class Tool:
                 'id': input_data_id_2  # Replace with the actual input data ID
             }
         ]
-        inputs_1,inputs_2 = self.get_Inputs_FastQC(input_file_1=input_file_1,input_file_2=input_file_2)
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs_1)
-        job_id = job["jobs"][0]["id"]
-        self.gi.jobs.wait_for_job(job_id)
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs_2)
-        return job["jobs"][0]["id"]
-
+        self.input_files = self.get_Input_files(input_file_1=input_file_1,input_file_2=input_file_2)
+        
     
+    def get_Input_files(self,input_file_1, input_file_2) -> list:
+        return [input_file_1, input_file_2]
+
+
+class FastQCTool(Tool):
+
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+        pprint(history_id)
+        pprint(self.history_id)
+        pprint(self.input_files)
+    
+    def get_Inputs(self, input_file_1, input_file_2):
+        inputs_1 = {
+            'input_file': {
+                'values': input_file_1
+            }
+        }
+        inputs_2 = {
+            'input_file': {
+                'values': input_file_2
+            },
+        }
+        return inputs_1,inputs_2
+
+    def get_Datasetnames(self):
+        dataset_name_1 = "T1A_forward"
+        dataset_name_2 = "T1A_reverse"
+        return dataset_name_1,dataset_name_2
+    
+    def run_tool_with_two_Inputfiles(self, tool_name):
+            super().run_tool_with_two_Inputfiles(tool_name, self.get_Datasetnames())
+            pprint(self.input_files)
+            inputs_1,inputs_2 = self.get_Inputs(self.input_files[0],self.input_files[1])
+            job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs_1)
+            job_id = job["jobs"][0]["id"]
+            self.gi.jobs.wait_for_job(job_id)
+            job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs_2)
+            return job["jobs"][0]["id"]
+
+
+class MultiQC(Tool):
+    def run_MultiQC(self):
+        # get latest release of the tool
+        MultiQC_version = self.get_newest_tool_version_and_id("MultiQC")
+        # get the tool Id of this release
+        tool_id = self.get_tool_id(MultiQC_version)
+        # get all datasets in the history, which are not deleted
+        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
+        # calculate the dataset id  of the dataset, which is needed for the next steps
+        lst=[]
+        for dataset in datasets:
+            if "RawData" in dataset["name"]:
+                lst.append(dataset["id"])
+
+        input_data_id_1 = lst[1]  # Replace with the actual input data ID
+        input_data_id_2 = lst[0]  # Replace with the actual input data ID
+        input_files = [
+            {
+                'src': 'hda',
+                'id': input_data_id_1  # Replace with the actual input data ID
+            },
+            {
+                'src': 'hda',
+                'id': input_data_id_2  # Replace with the actual input data ID
+            }
+        ]
+
+        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
+        inputs = {
+            'results_0|software_cond|software': 'fastqc',
+            'results_0|software_cond|output_0|input': {
+                'values': input_files
+            }
+        }
+        # run tool
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
+        return job["jobs"][0]["id"]      
 
     def run_cutapdt(self):
         Cutadapt_version = self.get_newest_tool_version_and_id("Cutadapt")
@@ -415,60 +520,9 @@ class Tool:
                     name="Normalized gene families"
                 )
 
-    def get_Inputs_FastQC(self, input_file_1, input_file_2):
-        inputs_1 = {
-            'input_file': {
-                'values': input_file_1
-            }
-        }
-        inputs_2 = {
-            'input_file': {
-                'values': input_file_2
-            },
-        }
-        return inputs_1,inputs_2
 
-    def get_Datasetnames_FastQC(self):
-        dataset_name_1 = "T1A_forward"
-        dataset_name_2 = "T1A_reverse"
-        return dataset_name_1,dataset_name_2
     
-    def run_MultiQC(self):
-        # get latest release of the tool
-        MultiQC_version = self.get_newest_tool_version_and_id("MultiQC")
-        # get the tool Id of this release
-        tool_id = self.get_tool_id(MultiQC_version)
-        # get all datasets in the history, which are not deleted
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        # calculate the dataset id  of the dataset, which is needed for the next steps
-        lst=[]
-        for dataset in datasets:
-            if "RawData" in dataset["name"]:
-                lst.append(dataset["id"])
-
-        input_data_id_1 = lst[1]  # Replace with the actual input data ID
-        input_data_id_2 = lst[0]  # Replace with the actual input data ID
-        input_files = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            },
-            {
-                'src': 'hda',
-                'id': input_data_id_2  # Replace with the actual input data ID
-            }
-        ]
-
-        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
-        inputs = {
-            'results_0|software_cond|software': 'fastqc',
-            'results_0|software_cond|output_0|input': {
-                'values': input_files
-            }
-        }
-        # run tool
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
-        return job["jobs"][0]["id"]
+    
     
 
     

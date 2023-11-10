@@ -102,8 +102,11 @@ class Tool:
         self.input_files = self.get_input_files(input_data_ids)
 
     def get_input_data_ids(self, dataset_names: List[str]):
+        # get the dataset_ids in a list given the names of the datasets
         dataset_ids = []
         datasets = self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False)
+        # check for every dataset_name in datasets if this name is valid, if so
+        # add it to dataset_id list
         for dataset_name in dataset_names:
             for dataset in datasets:
                 if dataset_name in dataset["name"]:
@@ -113,6 +116,15 @@ class Tool:
         return dataset_ids
 
     def get_input_files(self, input_data_ids: List[str]):
+        """
+        return list with input_file format
+        input_files = [
+            {
+                'src': 'hda',
+                'id': input_data_id_1  # Replace with the actual input data ID
+            }
+        ]
+        """
         return [{'src': 'hda', 'id': data_id} for data_id in input_data_ids]
 
     def run_tool(self, inputs: Dict):
@@ -122,6 +134,9 @@ class Tool:
         print(f"Tool '{self.tool_id}' has finished processing with job ID: {job_id}")
 
     def update_Dataset_names(self, update_names, old_names):
+        """
+        Update the odd dataset names with the new names
+        """
         input_data_ids = self.get_input_data_ids(old_names)
         for data_id, new_name in zip(input_data_ids, update_names):
             self.gi.histories.update_dataset(history_id=self.history_id, dataset_id=data_id, name=new_name)
@@ -134,6 +149,9 @@ class FastQCTool(Tool):
         self.history_id = history_id
 
     def get_Inputs(self, input_files: List[str]):
+        """
+        Return a dictionary with the correct inputs
+        """
         input_file_1, input_file_2 = input_files
         inputs_1 = {
             'input_file': {
@@ -148,6 +166,9 @@ class FastQCTool(Tool):
         return inputs_1, inputs_2
 
     def get_Datasetnames(self):
+        """
+        names of datsets
+        """
         return "T1A_forward", "T1A_reverse"
 
     def run_tool_with_Inputfiles(self, tool_name: str):

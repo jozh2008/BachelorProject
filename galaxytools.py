@@ -96,62 +96,39 @@ class Tool:
     def get_Inputs(self):
         pass
     
-    def run_tool_with_one_Inputfile(self, tool_name, datasets_name):
-        version = self.get_newest_tool_version_and_id(tool_name)
-        self.tool_id = self.get_tool_id(version)
-        input_data_id_1 = ''  # 
-        input_data_id_2 = ''  # 
-        dataset_name1,dataset_name2 = datasets_name
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        pprint(len(datasets))
-        for dataset in datasets:
-            if dataset_name1 == dataset["name"]:
-                input_data_id_1 = dataset["id"]
-                pprint(input_data_id_1)
-                pprint(dataset["name"])
-            if dataset_name2 == dataset["name"]:
-                input_data_id_2 = dataset["id"]
-                pprint(input_data_id_2)
-                pprint(dataset["name"])
+    def run_tool_with_Inputfiles(self, tool_name, datasets_name):
+        _ , self.tool_id = self.get_newest_tool_version_and_id(tool_name)
+        input_data_ids = self.get_input_data_ids(datasets_name)
+        pprint(input_data_ids)
+        self.input_files = self.get_input_files(input_data_ids)
 
 
-    def run_tool_with_two_Inputfiles(self, tool_name, datasets_name):
-        version = self.get_newest_tool_version_and_id(tool_name)
-        self.tool_id = self.get_tool_id(version)
-        input_data_id_1 = ''  # 
-        input_data_id_2 = ''  # 
-        dataset_name1,dataset_name2 = datasets_name
-        pprint(dataset_name1)
-        pprint(self.history_id)
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        pprint(len(datasets))
-        for dataset in datasets:
-            if dataset_name1 == dataset["name"]:
-                input_data_id_1 = dataset["id"]
-                pprint(input_data_id_1)
-                pprint(dataset["name"])
-            if dataset_name2 == dataset["name"]:
-                input_data_id_2 = dataset["id"]
-                pprint(input_data_id_2)
-                pprint(dataset["name"])
+    def get_input_data_ids(self, dataset_names):
+        dataset_ids = []
+        datasets = self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False)
+        for dataset_name in dataset_names:
+            for dataset in datasets:
+                if dataset_name in dataset["name"]:
+                    dataset_ids.append(dataset["id"])
+                    print(f"Found dataset '{dataset_name}' with ID: {dataset['id']}")
 
-        input_file_1 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            }
-        ]
-        input_file_2 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_2  # Replace with the actual input data ID
-            }
-        ]
-        self.input_files = self.get_Input_files(input_file_1=input_file_1,input_file_2=input_file_2)
-        
+        return dataset_ids
+
+    def get_input_files(self, input_data_ids):
+        return [{'src': 'hda', 'id': data_id} for data_id in input_data_ids]
     
-    def get_Input_files(self,input_file_1, input_file_2) -> list:
-        return [input_file_1, input_file_2]
+    def run_tool(self, inputs):
+        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs)
+        job_id = job["jobs"][0]["id"]
+        self.wait_for_job(job_id)
+        print(f"Tool '{self.tool_id}' has finished processing with job ID: {job_id}")
+    
+    def update_Dataset_names(self, update_names, old_names):
+        input_data_ids = self.get_input_data_ids(old_names)
+        for data_id, new_name in zip(input_data_ids, update_names):
+            self.gi.histories.update_dataset(history_id=self.history_id, dataset_id=data_id, name=new_name)
+
+
 
 
 class FastQCTool(Tool):
@@ -159,9 +136,6 @@ class FastQCTool(Tool):
     def __init__(self, server, api_key, history_id):
         super().__init__(server, api_key)
         self.history_id = history_id
-        pprint(history_id)
-        pprint(self.history_id)
-        pprint(self.input_files)
     
     def get_Inputs(self, input_file_1, input_file_2):
         inputs_1 = {
@@ -181,141 +155,90 @@ class FastQCTool(Tool):
         dataset_name_2 = "T1A_reverse"
         return dataset_name_1,dataset_name_2
     
-    def run_tool_with_two_Inputfiles(self, tool_name):
-            super().run_tool_with_two_Inputfiles(tool_name, self.get_Datasetnames())
-            pprint(self.input_files)
+    def run_tool_with_Inputfiles(self, tool_name):
+            super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
             inputs_1,inputs_2 = self.get_Inputs(self.input_files[0],self.input_files[1])
-            job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs_1)
-            job_id = job["jobs"][0]["id"]
-            self.gi.jobs.wait_for_job(job_id)
-            job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs_2)
-            return job["jobs"][0]["id"]
+            super().run_tool(inputs=inputs_1)
+            super().run_tool(inputs=inputs_2)
 
 
-class MultiQC(Tool):
-    def run_MultiQC(self):
-        # get latest release of the tool
-        MultiQC_version = self.get_newest_tool_version_and_id("MultiQC")
-        # get the tool Id of this release
-        tool_id = self.get_tool_id(MultiQC_version)
-        # get all datasets in the history, which are not deleted
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        # calculate the dataset id  of the dataset, which is needed for the next steps
-        lst=[]
-        for dataset in datasets:
-            if "RawData" in dataset["name"]:
-                lst.append(dataset["id"])
+class MultiQCTool(Tool):
+    SOFTWARE = "fastqc"
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+    
 
-        input_data_id_1 = lst[1]  # Replace with the actual input data ID
-        input_data_id_2 = lst[0]  # Replace with the actual input data ID
-        input_files = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            },
-            {
-                'src': 'hda',
-                'id': input_data_id_2  # Replace with the actual input data ID
-            }
-        ]
-
-        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
+    def get_Inputs(self, input_files):
+        pprint(input_files)
         inputs = {
-            'results_0|software_cond|software': 'fastqc',
+            'results_0|software_cond|software': self.SOFTWARE,
             'results_0|software_cond|output_0|input': {
                 'values': input_files
             }
         }
-        # run tool
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
-        return job["jobs"][0]["id"]      
+        return inputs
 
-    def run_cutapdt(self):
-        Cutadapt_version = self.get_newest_tool_version_and_id("Cutadapt")
-        tool_id = self.get_tool_id(Cutadapt_version)
-        input_data_id_1 = ''  # T1A_forward
-        input_data_id_2 = ''  # T1A_backward
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        for dataset in datasets:
-            if "T1A_forward" == dataset["name"]:
-                input_data_id_1 = dataset["id"]
-                pprint(input_data_id_1)
-                pprint(dataset["name"])
-            if "T1A_reverse" == dataset["name"]:
-                input_data_id_2 = dataset["id"]
-                pprint(input_data_id_2)
-                pprint(dataset["name"])
-        input_file_1 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            }
-        ]
-        input_file_2 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_2  # Replace with the actual input data ID
-            }
-        ]
-        # Define the input with 'software' parameter set to 'fastqc' and multiple input files
+    def get_Datasetnames(self):
+        return "FastQC on data 1: RawData", "FastQC on data 2: RawData"
+
+    def run_tool_with_Inputfiles(self, tool_name):
+        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
+        inputs = self.get_Inputs(self.input_files)
+        super().run_tool(inputs=inputs)
+
+class CutadaptTool(Tool):
+    LIBRARY_TYPE = 'paired'
+    MINIMUM_LENGTH = '150'
+    QUALITY_CUTOFF = '20'
+    OUTPUT_SELECTOR = 'report'
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+    
+    def get_Inputs(self, inputs_files):
+        input_file_1,input_file_2 =inputs_files
         inputs = {
-            'library|type': 'paired',
+            'library|type': self.LIBRARY_TYPE,
             'library|input_1': {
                 'values': input_file_1
             },
             'library|input_2': {
                 'values': input_file_2
             },
-            'filter_options|minimum_length': '150',
-            'read_mod_options|quality_cutoff': '20',
-            'output_selector': 'report'
+            'filter_options|minimum_length': self.MINIMUM_LENGTH,
+            'read_mod_options|quality_cutoff': self.QUALITY_CUTOFF,
+            'output_selector': self.OUTPUT_SELECTOR
         }
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        # Update name of datasets
-        # Cutadapt Read 1 output to QC controlled forward reads
-        # Cutadapt Read 2 output to QC controlled reverse reads
+        return inputs
 
-        dataset_id_Cutadapt_Read_1 = ""
-        dataset_id_Cutadapt_Read_2 = ""
-        for dataset in datasets:
-            if "Cutadapt" and "Read 1 Output" in dataset["name"]:
-                new_name = "QC controlled forward reads"
-                dataset_id_Cutadapt_Read_1 = dataset["id"]
-                dataset["name"] = new_name
-                self.gi.histories.update_dataset(history_id=self.history_id, dataset_id=dataset_id_Cutadapt_Read_1, name=new_name)
-            elif "Cutadapt" and "Read 2 Output" in dataset["name"]:
-                new_name = "QC controlled reverse reads"
-                dataset_id_Cutadapt_Read_2 = dataset["id"]
-                dataset["name"] = new_name
-                self.gi.histories.update_dataset(history_id=self.history_id, dataset_id=dataset_id_Cutadapt_Read_2, name=new_name)
-        return job["jobs"][0]["id"]
+    def get_Datasetnames(self):
+        return "T1A_forward", "T1A_reverse"
 
-    def run_SortMeRNA(self):
-        SortMeRNA_version = self.get_newest_tool_version_and_id("Filter with SortMeRNA")
-        # print(SortMeRNA_version)
-        tool_id = self.get_tool_id(SortMeRNA_version)
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        input_data_id_1 = ''  # QC controlled forward reads
-        input_data_id_2 = ''  # QC controlled reverse reads
-        for dataset in datasets:
-            if dataset["name"] == "QC controlled forward reads":
-                input_data_id_1 = dataset["id"]
-            if dataset["name"] == "QC controlled reverse reads":
-                input_data_id_2 = dataset["id"]
+    def get_new_Names_for_Dataset(self):
+        return "QC controlled forward reads", "QC controlled reverse reads"
+    
+    def get_Output_Names_Of_Cutadapt(self):
+        return "Read 1 Output", "Read 2 Output"
 
-        input_file_1 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            }
-        ]
-        input_file_2 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_2  # Replace with the actual input data ID
-            }
-        ]
+    def run_tool_with_Inputfiles(self, tool_name):
+        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
+        inputs = self.get_Inputs(self.input_files)
+        super().run_tool(inputs=inputs)
+        super().update_Dataset_names(self.get_new_Names_for_Dataset(), self.get_Output_Names_Of_Cutadapt())  
+    
+class SortMeRNATool(Tool):
+    DATABASES_SELECTOR = 'cached'
+    PAIRED_TYPE = '--paired_out'
+    ALIGNED_FASTX_OTHER = 'True'
+    LOG = 'True'
+
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+
+    def get_Inputs(self, inputs_files):
+        input_file_1,input_file_2 =inputs_files
         inputs = {
             'sequencing_type|sequencing_type_selector': 'paired',
             'sequencing_type|forward_reads': {
@@ -324,8 +247,8 @@ class MultiQC(Tool):
             'sequencing_type|reverse_reads': {
                 'values': input_file_2
             },
-            'sequencing_type|paired_type': '--paired_out',
-            'databases_type|databases_selector': 'cached',
+            'sequencing_type|paired_type': self.PAIRED_TYPE,
+            'databases_type|databases_selector': self.DATABASES_SELECTOR,
             'databases_type|input_databases': [
                 '2.1b-silva-arc-16s-id95',
                 '2.1b-silva-euk-28s-id98',
@@ -336,40 +259,27 @@ class MultiQC(Tool):
                 '2.1b-rfam-5s-database-id98',
                 '2.1b-silva-arc-23s-id98'
             ],
-            'aligned_fastx|other': 'True',
-            'log': 'True'
+            'aligned_fastx|other': self.ALIGNED_FASTX_OTHER,
+            'log': self.LOG
         }
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
-        return job["jobs"][0]["id"]
+        return inputs   
+    
+    def get_Datasetnames(self):
+        return "QC controlled forward reads", "QC controlled reverse reads"
+    
+    def run_tool_with_Inputfiles(self, tool_name):
+        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
+        inputs = self.get_Inputs(self.input_files)
+        super().run_tool(inputs=inputs)
 
-    def run_FASTQinterlacer(self):
-        FASTQ_interlacer_version = self.get_newest_tool_version_and_id("FASTQ interlacer")
-        tool_id = self.get_tool_id(FASTQ_interlacer_version)
-        input_data_id_1 = ''  # unaligend forward reads
-        input_data_id_2 = ''  # unaligned reverse reads
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        for dataset in datasets:
-            if "Unaligned forward reads" in dataset["name"] and "SortMeRNA" in dataset["name"]:
-                input_data_id_1 = dataset["id"]
-                pprint(input_data_id_1)
-                pprint(dataset["name"])
-            if "Unaligned reverse reads" in dataset["name"] and "SortMeRNA" in dataset["name"]:
-                input_data_id_2 = dataset["id"]
-                pprint(input_data_id_2)
-                pprint(dataset["name"])
 
-        input_file_1 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            }
-        ]
-        input_file_2 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_2  # Replace with the actual input data ID
-            }
-        ]
+class FASTQinterlacerTool(Tool):
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+    
+    def get_Inputs(self, inputs_files):
+        input_file_1,input_file_2 =inputs_files
         inputs = {
             'reads|input1_file': {
                 'values': input_file_1
@@ -378,66 +288,101 @@ class MultiQC(Tool):
                 'values': input_file_2
             },
         }
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
-        dataset_id_FASTQ_interlacer_pairs = ""
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        for dataset in datasets:
-            if "FASTQ interlacer pairs" in dataset["name"]:
-                # pprint("test")
-                dataset_id_FASTQ_interlacer_pairs = dataset["id"]
-                self.gi.histories.update_dataset(
-                    history_id=self.history_id,
-                    dataset_id=dataset_id_FASTQ_interlacer_pairs,
-                    name="Interlaced non rRNA reads"
-                )
-        return job["jobs"][0]["id"]
+        return inputs
 
-    def run_MetaPhlAn(self):
-        MetaPhlAn_version = self.get_newest_tool_version_and_id("MetaPhlAn")
-        # print(MetaPhlAn_version)
-        tool_id = self.get_tool_id(MetaPhlAn_version)
-        # input_id = (self.gi.tools.build(tool_id=tool_id,history_id=self.history_id)["state_inputs"])
-        # pprint(input_id)
-        datasets = (self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False))
-        input_data_id_1 = ''  # QC controlled forward reads
-        input_data_id_2 = ''  # QC controlled backward reads
-        for dataset in datasets:
-            if "QC controlled forward reads" in dataset["name"]:
-                input_data_id_1 = dataset["id"]
-                # pprint(dataset["id"])
-                # pprint(dataset["name"])
-            if "QC controlled reverse reads" in dataset["name"]:
-                # pprint(dataset["id"])
-                # pprint(dataset["name"])
-                input_data_id_2 = dataset["id"]
+    def get_Datasetnames(self):
+        return "Unaligned forward reads", "Unaligned reverse reads"
+    
+    def get_new_Names_for_Dataset(self):
+        return ["Interlaced non rRNA reads"]
+    
+    def get_Output_Names_Of_Cutadapt(self):
+        return ["FASTQ interlacer pairs"]
+    
+    def run_tool_with_Inputfiles(self, tool_name):
+        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
+        inputs = self.get_Inputs(self.input_files)
+        super().run_tool(inputs=inputs)
+        super().update_Dataset_names(self.get_new_Names_for_Dataset(), self.get_Output_Names_Of_Cutadapt())
 
-        input_file_1 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            }
-        ]
-        input_file_2 = [
-            {
-                'src': 'hda',
-                'id': input_data_id_2  # Replace with the actual input data ID
-            }
-        ]
+class MetaPhlAnTool(Tool):
+    SELECTOR = 'paired'
+    STATE_Q = '0.1'
+    KRONA_OUTPUT = "True"
+    TAX_LEV_SPLIT_LEVELS = "True"
 
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+
+    def get_Inputs(self, inputs_files):
+        input_file_1,input_file_2 =inputs_files
         inputs = {
-            'inputs|in|raw_in|selector': 'paired',
+            'inputs|in|raw_in|selector': self.SELECTOR,
             'inputs|in|raw_in|in_f': {
                 'values': input_file_1
             },
             'inputs|in|raw_in|in_r': {
                 'values': input_file_2
             },
-            'analysis|analysis_type|tax_lev|split_levels': 'True',
-            'analysis|stat_q': '0.1',
-            'out|krona_output': 'True'
+            'analysis|analysis_type|tax_lev|split_levels': self.TAX_LEV_SPLIT_LEVELS,
+            'analysis|stat_q': self.STATE_Q,
+            'out|krona_output': self.KRONA_OUTPUT
         }
-        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
-        return job["jobs"][0]["id"]
+        return inputs
+    
+    def get_Datasetnames(self):
+        return "QC controlled forward reads", "QC controlled reverse reads"
+    
+    def run_tool_with_Inputfiles(self, tool_name):
+        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
+        inputs = self.get_Inputs(self.input_files)
+        super().run_tool(inputs=inputs)
+
+
+class HUMAnNTool(Tool):
+
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+    
+    def get_Inputs(self, inputs_files):
+        input_file_1,input_file_2 =inputs_files
+        inputs = {
+            'in|input': {
+                'values': input_file_1
+            },
+            'wf|selector|': 'bypass_taxonomic_profiling',
+            'wf|bypass_taxonomic_profiling|--taxonomic-profile': {
+                'values': input_file_2
+            },
+            'wf|nucleotide_search|nucleotide_db|nucleotide_database': 'chocophlan-full-3.6.0-29032023',
+            'wf|translated_search|protein_db|protein_database': 'uniref-uniref90_diamond-3.0.0-13052021'
+        }
+        return inputs
+    
+    def get_Datasetnames(self):
+        return "Interlaced non rRNA reads", "Predicted taxon relative abundances"
+
+    def get_input_data_ids(self, dataset_names):
+        dataset_ids = []
+        datasets = self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False)
+        for dataset_name in dataset_names:
+            for dataset in datasets:
+                if (dataset_name in dataset["name"]
+                        and "Krona" not in dataset["name"]
+                        and "taxonomic levels" not in dataset["name"]):
+                    dataset_ids.append(dataset["id"])
+                    print(f"Found dataset '{dataset_name}' with ID: {dataset['id']}")
+
+        return dataset_ids
+    
+    def run_tool_with_Inputfiles(self, tool_name):
+        _ , self.tool_id = self.get_newest_tool_version_and_id(tool_name)
+        input_data_ids = self.get_input_data_ids(self.get_Datasetnames())
+        self.input_files = super().get_input_files(input_data_ids)
+        inputs = self.get_Inputs(self.input_files)
+        super().run_tool(inputs=inputs)
 
     def run_HUMAnN(self):
         HUMAnN_version = self.get_newest_tool_version_and_id("HUMAnN")
@@ -483,6 +428,44 @@ class MultiQC(Tool):
         job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inputs)
         return job["jobs"][0]["id"]
 
+class RenormalizeTool(Tool):
+
+    def __init__(self, server, api_key, history_id):
+        super().__init__(server, api_key)
+        self.history_id = history_id
+        self.pathway_name = ""
+
+    def get_Inputs(self, inputs_files):
+        input_file_1 = inputs_files
+        inputs = {
+            'input': {
+                'values': input_file_1
+            },
+            'units': 'relab',
+        }
+        return inputs
+    
+    def get_Datasetnames(self, name):
+        self.pathway_name = name
+        return [name]
+
+    def get_new_Names_for_Dataset(self):
+        name = ""
+        if self.pathway_name == "Gene families and their abundance":
+            name = "Normalized gene families"
+        elif self.pathway_name == "Pathways and their abundance":
+            name = "Normalized pathways"
+        return [name]
+    
+    def get_Output_Names_Of_Cutadapt(self):
+        return ["Renormalize"]
+    
+    def run_tool_with_Inputfiles(self, tool_name):
+        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames(self.pathway_name))
+        inputs = self.get_Inputs(self.input_files)
+        super().run_tool(inputs=inputs)
+        super().update_Dataset_names(self.get_new_Names_for_Dataset(), self.get_Output_Names_Of_Cutadapt())   
+
     def run_Renormalize(self):
         Renormalize_version = self.get_newest_tool_version_and_id("Renormalize")
         print(Renormalize_version)
@@ -519,13 +502,3 @@ class MultiQC(Tool):
                     dataset_id=dataset_id_FASTQ_interlacer_pairs,
                     name="Normalized gene families"
                 )
-
-
-    
-    
-    
-
-    
-
-
-    

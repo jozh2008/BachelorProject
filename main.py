@@ -11,26 +11,38 @@ def main():
     api_key = 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
     # files to upload
     file_forward = "Upload_files/T1A_forward.fastqsanger"
-    file_backward = "Upload_files/T1A_reverse.fastqsanger"
+    file_reverse = "Upload_files/T1A_reverse.fastqsanger"
     # History which we use on the galaxy server for the workflow
     history_name = "Metatranscriptomics Coding 5"
     gi = Tool(server, api_key)
 
     gi.create_history(history_name=history_name)
     gi.get_history_id(history_name=history_name)
-    pprint(gi.get_history_id(history_name=history_name))
+    #pprint(gi.get_history_id(history_name=history_name))
     fc = FastQCTool(server=server,api_key=api_key,history_id=gi.history_id)
+    mc = MultiQCTool(server=server,api_key=api_key,history_id=gi.history_id)
+    ca = CutadaptTool(server=server,api_key=api_key,history_id=gi.history_id)
+    so = SortMeRNATool(server=server,api_key=api_key,history_id=gi.history_id)
+    fi = FASTQinterlacerTool(server=server,api_key=api_key,history_id=gi.history_id)
+    me = MetaPhlAnTool(server=server,api_key=api_key,history_id=gi.history_id)
+    hu = HUMAnNTool(server=server,api_key=api_key,history_id=gi.history_id)
+    re = RenormalizeTool(server=server,api_key=api_key,history_id=gi.history_id)
     # gi.test(file_backward)
-    """
-    gi.get_newest_tool_version_and_id("FastQC")
-    gi.get_newest_tool_version_and_id("MultiQC")
-    gi.get_newest_tool_version_and_id("Filter with SortMeRNA")
-    gi.get_newest_tool_version_and_id("MetaPhlAn")
-    gi.get_newest_tool_version_and_id("HUMAnN")
-    """
-    job = gi.upload_file(file_forward, file_backward)
+
+
+    job = gi.upload_file(file_forward, file_reverse)
     gi.wait_for_job(job)
-    fc.run_tool_with_two_Inputfiles("FastQC")
+    fc.run_tool_with_Inputfiles("FastQC")
+    mc.run_tool_with_Inputfiles("MultiQC")
+    ca.run_tool_with_Inputfiles("Cutadapt")
+    so.run_tool_with_Inputfiles("Filter with SortMeRNA")
+    fi.run_tool_with_Inputfiles("FASTQ interlacer")
+    me.run_tool_with_Inputfiles("MetaPhlAn")
+    hu.run_tool_with_Inputfiles("HUMAnN")
+    re.get_Datasetnames("Gene families and their abundance")
+    re.run_tool_with_Inputfiles("Renormalize")
+    re.get_Datasetnames("Pathways and their abundance")
+    re.run_tool_with_Inputfiles("Renormalize")
     #job = gi.run_tool_with_two_Inputfiles("FastQC")
     """
     gi.wait_for_job(job)

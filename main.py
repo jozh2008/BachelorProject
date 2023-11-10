@@ -1,6 +1,6 @@
 # from bioblend import galaxy
 # from pprint import pprint
-#from workflow import *
+# from workflow import *
 from galaxytools import *
 
 
@@ -18,20 +18,17 @@ def main():
 
     gi.create_history(history_name=history_name)
     gi.get_history_id(history_name=history_name)
-    #pprint(gi.get_history_id(history_name=history_name))
-    fc = FastQCTool(server=server,api_key=api_key,history_id=gi.history_id)
-    mc = MultiQCTool(server=server,api_key=api_key,history_id=gi.history_id)
-    ca = CutadaptTool(server=server,api_key=api_key,history_id=gi.history_id)
-    so = SortMeRNATool(server=server,api_key=api_key,history_id=gi.history_id)
-    fi = FASTQinterlacerTool(server=server,api_key=api_key,history_id=gi.history_id)
-    me = MetaPhlAnTool(server=server,api_key=api_key,history_id=gi.history_id)
-    hu = HUMAnNTool(server=server,api_key=api_key,history_id=gi.history_id)
-    re = RenormalizeTool(server=server,api_key=api_key,history_id=gi.history_id)
-    # gi.test(file_backward)
+    fc = FastQCTool(server=server, api_key=api_key, history_id=gi.history_id)
+    mc = MultiQCTool(server=server, api_key=api_key, history_id=gi.history_id)
+    ca = CutadaptTool(server=server, api_key=api_key, history_id=gi.history_id)
+    so = SortMeRNATool(server=server, api_key=api_key, history_id=gi.history_id)
+    fi = FASTQinterlacerTool(server=server, api_key=api_key, history_id=gi.history_id)
+    me = MetaPhlAnTool(server=server, api_key=api_key, history_id=gi.history_id)
+    hu = HUMAnNTool(server=server, api_key=api_key, history_id=gi.history_id)
+    re = RenormalizeTool(server=server, api_key=api_key, history_id=gi.history_id)
 
-
-    job = gi.upload_file(file_forward, file_reverse)
-    gi.wait_for_job(job)
+    gi.upload_file(file_forward, "T1A_forward")
+    gi.upload_file(file_reverse, "T1A_reverse")
     fc.run_tool_with_Inputfiles("FastQC")
     mc.run_tool_with_Inputfiles("MultiQC")
     ca.run_tool_with_Inputfiles("Cutadapt")
@@ -43,23 +40,6 @@ def main():
     re.run_tool_with_Inputfiles("Renormalize")
     re.get_Datasetnames("Pathways and their abundance")
     re.run_tool_with_Inputfiles("Renormalize")
-    #job = gi.run_tool_with_two_Inputfiles("FastQC")
-    """
-    gi.wait_for_job(job)
-    job = gi.run_MultiQC()
-    gi.wait_for_job(job)
-    job = gi.run_cutapdt()
-    gi.wait_for_job(job)
-    job = gi.run_SortMeRNA()
-    gi.wait_for_job(job)
-    job = gi.run_FASTQinterlacer()
-    gi.wait_for_job(job)
-    job = gi.run_MetaPhlAn()
-    gi.wait_for_job(job)
-    job = gi.run_HUMAnN()
-    gi.wait_for_job(job)
-    job = gi.run_Renormalize()
-    """
 
 
 if __name__ == '__main__':

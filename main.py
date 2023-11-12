@@ -8,6 +8,7 @@ server = 'https://usegalaxy.eu/'
 # api kex of account
 api_key = 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
 
+
 def main(server: str, api_key: str):
     # files to upload
     file_forward = "Upload_files/T1A_forward.fastqsanger"
@@ -18,17 +19,15 @@ def main(server: str, api_key: str):
     gi.create_history(history_name=history_name)
     gi.get_history_id(history_name=history_name)
 
-
     tools = [
-    FastQCTool(server=server, api_key=api_key, history_id=gi.history_id), 
-    MultiQCTool(server=server, api_key=api_key, history_id=gi.history_id),
-    CutadaptTool(server=server, api_key=api_key, history_id=gi.history_id),
-    SortMeRNATool(server=server, api_key=api_key, history_id=gi.history_id),
-    FASTQinterlacerTool(server=server, api_key=api_key, history_id=gi.history_id),
-    MetaPhlAnTool(server=server, api_key=api_key, history_id=gi.history_id),
-    HUMAnNTool(server=server, api_key=api_key, history_id=gi.history_id)
+        FastQCTool(server=server, api_key=api_key, history_id=gi.history_id),
+        MultiQCTool(server=server, api_key=api_key, history_id=gi.history_id),
+        CutadaptTool(server=server, api_key=api_key, history_id=gi.history_id),
+        SortMeRNATool(server=server, api_key=api_key, history_id=gi.history_id),
+        FASTQinterlacerTool(server=server, api_key=api_key, history_id=gi.history_id),
+        MetaPhlAnTool(server=server, api_key=api_key, history_id=gi.history_id),
+        HUMAnNTool(server=server, api_key=api_key, history_id=gi.history_id)
     ]
-    
 
     gi.upload_file(file_forward, "T1A_forward")
     gi.upload_file(file_reverse, "T1A_reverse")
@@ -42,24 +41,31 @@ def main(server: str, api_key: str):
         re.get_Datasetnames(dataset)
         re.run_tool_with_Inputfiles("Renormalize")
 
+
 def check_connection(server: str, api_key: str):
     gi = Tool(server, api_key)
     while True:
-        time.sleep(5)
+        time.sleep(60)
         gi.connect_to_galaxy_with_retry()
 
+
 def get_Databases(server: str, api_key: str):
-    gi =  Tool(server, api_key)
+    gi = Tool(server, api_key)
     history_name = "Metatranscriptomics Coding 5"
     gi.get_history_id(history_name=history_name)
-    si = SortMeRNATool(server,api_key, gi.history_id)
+    si = SortMeRNATool(server, api_key, gi.history_id)
+    hu = HUMAnNTool(server, api_key, gi.history_id)
     si.get_Tool_Data_Tables()
+    hu.get_Tool_Data_Tables()
+
 
 if __name__ == '__main__':
-    #process1 = multiprocessing.Process(target=main, args=[server, api_key])
-    #process2 = multiprocessing.Process(target=check_connection, args=[server, api_key])
-    #process1.start()
-    #process2.start()
-    #process1.join()
-    #process2.terminate()
-    get_Databases(server,api_key)
+    process1 = multiprocessing.Process(target=main, args=[server, api_key])
+    process2 = multiprocessing.Process(target=check_connection, args=[server, api_key])
+    process3 = multiprocessing.Process(target=get_Databases, args=[server, api_key])
+    process1.start()
+    process2.start()
+    process3.start()
+    process1.join()
+    process2.terminate()
+    process3.join()

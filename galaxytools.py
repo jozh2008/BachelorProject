@@ -148,12 +148,11 @@ class Tool:
         input_databases_options = tools2.get('inputs', {})
         return input_databases_options
 
-
     def get_Inputs_2(self):
         inputs = {
-            #'sequencing_type|paired_type': '--paired_out',
-            #'databases_type|databases_selector': 'cached',
-            #'wf|nucleotide_search|nucleotide_db|nucleotide_database': 'chocophlan-full-3.6.0-29032023',
+            # 'sequencing_type|paired_type': '--paired_out',
+            # 'databases_type|databases_selector': 'cached',
+            # 'wf|nucleotide_search|nucleotide_db|nucleotide_database': 'chocophlan-full-3.6.0-29032023',
             'databases_type|input_databases': [
                 '2.1b-silva-arc-16s-id95',
                 '2.1b-silva-euk-28s-id98',
@@ -166,66 +165,60 @@ class Tool:
             ],
         }
         return inputs
-        
+
     def get_Data_Tables_2(self, databases_options, database_name):
-        lst =[]
+        lst = []
         for database in databases_options:
-            if isinstance(database,list):
+            if isinstance(database, list):
                 database = database[0]
-                pprint(database["name"])
-                if database_name == database["name"]:
-                    lst = (database)
-            else:
-                pprint(database["name"])
-                if database_name == database["name"]:
-                    lst = (database)
+            if database_name == database["name"]:
+                lst = (database)
         return lst
-    
+
     def get_Data_Tables_with_values(self, databases_options, database_value):
-        lst =[]
+        lst = []
         for database in databases_options:
-            if isinstance(database,list):
+            if isinstance(database, list):
                 database = database[0]
-                pprint(database["value"])
-                if database_value == database["value"]:
-                    lst = (database)
-            else:
-                pprint(database["value"])
-                if database_value == database["value"]:
-                    lst = (database)
+            if database_value == database["value"]:
+                lst = (database)
         return lst
-    
+
     def get_Database_selectot_3(self, database):
         lst2 = []
+        if isinstance(database, list):
+            database = database[0]
         helper = database.get("cases", {})
         if bool(helper):
             lst2 = (helper)
         return lst2
-    
+
     def get_Database_selectot_4(self, database):
         lst2 = []
+        if isinstance(database, list):
+            database = database[0]
         helper = database.get("inputs", {})
         if bool(helper):
             lst2 = (helper)
         return lst2
 
     def get_options(self, lst):
-        lst2 =[]
+        lst2 = []
         for database in lst:
             lst2.append(database["options"])
         return lst2
-    
+
     def remove_duplicate(self, orginal_list):
         unique_list = []
         for item in orginal_list:
             if item not in unique_list:
-                unique_list.append(item)   
+                unique_list.append(item)
         return unique_list
-    
+
     def get_flattend_ist(self, original_list):
         flattened_list = [element for sublist in original_list[0] for element in sublist]
         return flattened_list
-    
+
 
 class FastQCTool(Tool):
 
@@ -378,10 +371,10 @@ class SortMeRNATool(Tool):
         super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
         inputs = self.get_Inputs(self.input_files)
         super().run_tool(inputs=inputs)
-    
+
     def get_Tool_Data_Tables(self):
         list1 = super().get_tool_tables(self.tool_name)
-        list2 = super().get_Data_Tables_2(list1,"databases_type")
+        list2 = super().get_Data_Tables_2(list1, "databases_type")
         list3 = super().get_Database_selectot_3(list2)
         list4 = super().get_Data_Tables_with_values(list3, "cached")
         list5 = super().get_Database_selectot_4(list4)
@@ -463,6 +456,7 @@ class MetaPhlAnTool(Tool):
 
 class HUMAnNTool(Tool):
     SELECTOR = 'bypass_taxonomic_profiling'
+
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
@@ -505,6 +499,22 @@ class HUMAnNTool(Tool):
         self.input_files = super().get_input_files(input_data_ids)
         inputs = self.get_Inputs(self.input_files)
         super().run_tool(inputs=inputs)
+
+    def get_Tool_Data_Tables(self):
+        list1 = super().get_tool_tables(self.tool_name)
+        list2 = super().get_Data_Tables_2(list1, "wf")
+        list3 = super().get_Database_selectot_3(list2)
+        list4 = super().get_Data_Tables_with_values(list3, "bypass_taxonomic_profiling")
+        list5 = super().get_Database_selectot_4(list4)
+        list6 = super().get_Data_Tables_2(list5, "nucleotide_search")
+        list7 = super().get_Database_selectot_4(list6)
+        list8 = super().get_Database_selectot_3(list7)
+        list9 = super().get_Data_Tables_with_values(list8, "cached")
+        list10 = super().get_Database_selectot_4(list9)
+        list11 = super().get_options(list10)
+        list12 = super().get_flattend_ist(list11)
+        list13 = super().remove_duplicate(list12)
+        pprint(list13)
 
 
 class RenormalizeTool(Tool):

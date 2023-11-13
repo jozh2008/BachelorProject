@@ -1,6 +1,6 @@
 from bioblend import galaxy
 from bioblend import ConnectionError
-from pprint import pprint
+from pprint import pprint, PrettyPrinter
 import re
 import time
 from typing import (
@@ -148,65 +148,18 @@ class Tool:
         input_databases_options = tools2.get('inputs', {})
         return input_databases_options
 
-    def get_Inputs_2(self):
-        inputs = {
-            # 'sequencing_type|paired_type': '--paired_out',
-            # 'databases_type|databases_selector': 'cached',
-            # 'wf|nucleotide_search|nucleotide_db|nucleotide_database': 'chocophlan-full-3.6.0-29032023',
-            'databases_type|input_databases': [
-                '2.1b-silva-arc-16s-id95',
-                '2.1b-silva-euk-28s-id98',
-                '2.1b-silva-euk-18s-id95',
-                '2.1b-silva-bac-23s-id98',
-                '2.1b-silva-bac-16s-id90',
-                '2.1b-rfam-5.8s-database-id98',
-                '2.1b-rfam-5s-database-id98',
-                '2.1b-silva-arc-23s-id98'
-            ],
-        }
-        return inputs
+    def write_to_file(self, data):
+        with open('output.txt', 'w') as file:
+            pp = PrettyPrinter(indent=4, stream=file)
+            pp.pprint(data)
+        file.close()
 
-    def get_Data_Tables_2(self, databases_options, database_name):
+    def get_databases(self, inputs):
         lst = []
-        for database in databases_options:
-            if isinstance(database, list):
-                database = database[0]
-            if database_name == database["name"]:
-                lst = (database)
+        for i in range(len(inputs)):
+            if i % 3 == 1:
+                lst.append(inputs[i])
         return lst
-
-    def get_Data_Tables_with_values(self, databases_options, database_value):
-        lst = []
-        for database in databases_options:
-            if isinstance(database, list):
-                database = database[0]
-            if database_value == database["value"]:
-                lst = (database)
-        return lst
-
-    def get_Database_selectot_3(self, database):
-        lst2 = []
-        if isinstance(database, list):
-            database = database[0]
-        helper = database.get("cases", {})
-        if bool(helper):
-            lst2 = (helper)
-        return lst2
-
-    def get_Database_selectot_4(self, database):
-        lst2 = []
-        if isinstance(database, list):
-            database = database[0]
-        helper = database.get("inputs", {})
-        if bool(helper):
-            lst2 = (helper)
-        return lst2
-
-    def get_options(self, lst):
-        lst2 = []
-        for database in lst:
-            lst2.append(database["options"])
-        return lst2
 
     def remove_duplicate(self, orginal_list):
         unique_list = []
@@ -215,9 +168,47 @@ class Tool:
                 unique_list.append(item)
         return unique_list
 
-    def get_flattend_ist(self, original_list):
+    def get_flattend_list(self, original_list):
         flattened_list = [element for sublist in original_list[0] for element in sublist]
         return flattened_list
+
+    def json_extract(self, obj, key):
+        """Recursively fetch values from nested JSON."""
+        arr = []
+
+        def extract(obj, arr: list, key):
+            """Recursively search for values of key in JSON tree."""
+            if isinstance(obj, dict):
+                for _, v in obj.items():
+                    if isinstance(v, (dict, list)):
+                        extract(v, arr, key)
+                    if v == key:
+                        arr.append(obj.get("options", {}))
+            elif isinstance(obj, list):
+                for item in obj:
+                    extract(item, arr, key)
+            return arr
+        values = extract(obj, arr, key)
+        return values
+    
+    def get_Datatables(self,tool_name, database_name):
+        # Step 1: Get tool tables
+        tool_tables = self.get_tool_tables(tool_name)
+
+        # Step 2: Extract input databases
+        input_databases = self.json_extract(tool_tables, database_name)
+
+        # Step 3: Remove duplicates
+        unique_databases = self.remove_duplicate(input_databases)
+
+        # Step 4: Flatten the list
+        flattened_list = self.get_flattend_list(unique_databases)
+
+        # Step 5: Get databases
+        databases = self.get_databases(flattened_list)
+
+        # return the result
+        return (databases)
 
 
 class FastQCTool(Tool):
@@ -372,16 +363,9 @@ class SortMeRNATool(Tool):
         inputs = self.get_Inputs(self.input_files)
         super().run_tool(inputs=inputs)
 
-    def get_Tool_Data_Tables(self):
-        list1 = super().get_tool_tables(self.tool_name)
-        list2 = super().get_Data_Tables_2(list1, "databases_type")
-        list3 = super().get_Database_selectot_3(list2)
-        list4 = super().get_Data_Tables_with_values(list3, "cached")
-        list5 = super().get_Database_selectot_4(list4)
-        list6 = super().get_options(list5)
-        list7 = super().get_flattend_ist(list6)
-        list8 = super().remove_duplicate(list7)
-        pprint(list8)
+    def get_Datatables(self):
+        databases = super().get_Datatables(self.tool_name, "input_databases")
+        pprint(databases)
 
 
 class FASTQinterlacerTool(Tool):
@@ -500,21 +484,9 @@ class HUMAnNTool(Tool):
         inputs = self.get_Inputs(self.input_files)
         super().run_tool(inputs=inputs)
 
-    def get_Tool_Data_Tables(self):
-        list1 = super().get_tool_tables(self.tool_name)
-        list2 = super().get_Data_Tables_2(list1, "wf")
-        list3 = super().get_Database_selectot_3(list2)
-        list4 = super().get_Data_Tables_with_values(list3, "bypass_taxonomic_profiling")
-        list5 = super().get_Database_selectot_4(list4)
-        list6 = super().get_Data_Tables_2(list5, "nucleotide_search")
-        list7 = super().get_Database_selectot_4(list6)
-        list8 = super().get_Database_selectot_3(list7)
-        list9 = super().get_Data_Tables_with_values(list8, "cached")
-        list10 = super().get_Database_selectot_4(list9)
-        list11 = super().get_options(list10)
-        list12 = super().get_flattend_ist(list11)
-        list13 = super().remove_duplicate(list12)
-        pprint(list13)
+    def get_Datatables(self):
+        databases = super().get_Datatables(self.tool_name, "nucleotide_database")
+        pprint(databases)
 
 
 class RenormalizeTool(Tool):

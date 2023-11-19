@@ -43,21 +43,24 @@ class Tool:
         for tool in tools:
             # Extract numeric components from the version string
             version_parts = re.findall(r'\d+', tool["version"])
-
             # If version_parts is not empty, the last component is the galaxy version
             galaxy_version = version_parts[-1] if version_parts else ""
-
             # Store the tool version and associated galaxy version in the dictionary
             tool_versions[tool["version"]] = galaxy_version
 
         # Find the newest version based on the version numbers
         newest_version = max(tool_versions, key=self.version_key)
-
         # Retrieve the tool ID of the newest version
         tool_id = next(tool["id"] for tool in tools if tool["version"] == newest_version)
-
         # Return the newest version and tool ID
         return newest_version, tool_id
+
+    def get_all_tool_version_and_id(self, tool_name: str):
+        tools = self.gi.tools.get_tools(name=tool_name)
+        tool_versions = {}
+        for tool in tools:
+            tool_versions[tool["version"]] = tool["id"]
+        return tool_versions
 
     # calculates the history_id for a given history name
     def get_history_id(self, history_name: str):
@@ -83,7 +86,10 @@ class Tool:
 
     # wait until job is done, cause tools are dependent of each other
     def wait_for_job(self, job_id: str):
-        self.gi.jobs.wait_for_job(job_id=job_id)
+        try:
+            self.gi.jobs.wait_for_job(job_id=job_id)
+        except ConnectionError:
+            self.connect_to_galaxy_with_retry()
 
     # Define a custom key function to extract and compare version numbers
     def version_key(self, version: SyntaxError):
@@ -91,13 +97,13 @@ class Tool:
         parts = [int(part) for part in re.findall(r'\d+', version)]
         return tuple(parts)
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         pass
 
-    def get_Inputs(self):
+    def get_inputs(self):
         pass
 
-    def run_tool_with_Inputfiles(self, tool_name: str, datasets_name: List[str]):
+    def run_tool_with_input_files(self, tool_name: str, datasets_name: List[str]):
         _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
         input_data_ids = self.get_input_data_ids(datasets_name)
         self.input_files = self.get_input_files(input_data_ids)
@@ -134,7 +140,7 @@ class Tool:
         self.wait_for_job(job_id)
         print(f"Tool '{self.tool_id}' has finished processing with job ID: {job_id}")
 
-    def update_Dataset_names(self, update_names, old_names):
+    def update_dataset_names(self, update_names, old_names):
         """
         Update the odd dataset names with the new names
         """
@@ -142,11 +148,23 @@ class Tool:
         for data_id, new_name in zip(input_data_ids, update_names):
             self.gi.histories.update_dataset(history_id=self.history_id, dataset_id=data_id, name=new_name)
 
-    def get_tool_tables(self, tool_name):
+    def get_tool_input_options(self, tool_name):
+        """
+        Get detailed input options for a specified tool.
+
+        Parameters:
+        - tool_name: The name of the tool.
+
+        Returns:
+        - input_options: Detailed input options for the tool.
+        """
+        # Get the newest version and ID of the tool
         _, tool_id = self.get_newest_tool_version_and_id(tool_name)
-        tools2 = self.gi.tools.show_tool(tool_id, io_details=True)
-        input_databases_options = tools2.get('inputs', {})
-        return input_databases_options
+        # Show the tool with detailed input and output options
+        tool_details = self.gi.tools.show_tool(tool_id, io_details=True)
+        # Extract detailed input options
+        input_options = tool_details.get('inputs', {})
+        return input_options
 
     def write_to_file(self, data):
         with open('output.txt', 'w') as file:
@@ -155,11 +173,9 @@ class Tool:
         file.close()
 
     def get_databases(self, inputs):
-        lst = []
-        for i in range(len(inputs)):
-            if i % 3 == 1:
-                lst.append(inputs[i])
-        return lst
+        # json_extract returns for every database a list with name, database_name, selected
+        # return every database_name in a list
+        return [inputs[i] for i in range(1, len(inputs), 3)]
 
     def remove_duplicate(self, orginal_list):
         unique_list = []
@@ -169,6 +185,15 @@ class Tool:
         return unique_list
 
     def get_flattend_list(self, original_list):
+        """
+        Flatten a list of lists.
+
+         Parameters:
+            - original_list: The original list of lists.
+
+        Returns:
+            - flattened_list: The flattened list.
+        """
         flattened_list = [element for sublist in original_list[0] for element in sublist]
         return flattened_list
 
@@ -190,10 +215,10 @@ class Tool:
             return arr
         values = extract(obj, arr, key)
         return values
-    
-    def get_Datatables(self,tool_name, database_name):
-        # Step 1: Get tool tables
-        tool_tables = self.get_tool_tables(tool_name)
+
+    def get_datatables(self, tool_name, database_name):
+        # Step 1: Get tool input options
+        tool_tables = self.get_tool_input_options(tool_name)
 
         # Step 2: Extract input databases
         input_databases = self.json_extract(tool_tables, database_name)
@@ -218,7 +243,7 @@ class FastQCTool(Tool):
         self.history_id = history_id
         self.tool_name = "FastQC"
 
-    def get_Inputs(self, input_files: List[str]):
+    def get_inputs(self, input_files: List[str]):
         """
         Return a dictionary with the correct inputs
         """
@@ -235,15 +260,15 @@ class FastQCTool(Tool):
         }
         return inputs_1, inputs_2
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         """
         names of datsets
         """
         return "T1A_forward", "T1A_reverse"
 
-    def run_tool_with_Inputfiles(self, tool_name: str):
-        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
-        inputs_1, inputs_2 = self.get_Inputs(self.input_files)
+    def run_tool_with_input_files(self, tool_name: str):
+        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
+        inputs_1, inputs_2 = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs_1)
         super().run_tool(inputs=inputs_2)
 
@@ -256,7 +281,7 @@ class MultiQCTool(Tool):
         self.history_id = history_id
         self.tool_name = "MultiQC"
 
-    def get_Inputs(self, input_files: List[str]):
+    def get_inputs(self, input_files: List[str]):
         inputs = {
             'results_0|software_cond|software': self.SOFTWARE,
             'results_0|software_cond|output_0|input': {
@@ -265,12 +290,12 @@ class MultiQCTool(Tool):
         }
         return inputs
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         return "FastQC on data 1: RawData", "FastQC on data 2: RawData"
 
-    def run_tool_with_Inputfiles(self, tool_name: str):
-        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
-        inputs = self.get_Inputs(self.input_files)
+    def run_tool_with_input_files(self, tool_name: str):
+        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
+        inputs = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs)
 
 
@@ -285,7 +310,7 @@ class CutadaptTool(Tool):
         self.history_id = history_id
         self.tool_name = "Cutadapt"
 
-    def get_Inputs(self, inputs_files: List[str]):
+    def get_inputs(self, inputs_files: List[str]):
         input_file_1, input_file_2 = inputs_files
         inputs = {
             'library|type': self.LIBRARY_TYPE,
@@ -301,20 +326,20 @@ class CutadaptTool(Tool):
         }
         return inputs
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         return "T1A_forward", "T1A_reverse"
 
-    def get_new_Names_for_Dataset(self):
+    def get_new_names_for_dataset(self):
         return "QC controlled forward reads", "QC controlled reverse reads"
 
-    def get_Output_Names_Of_Cutadapt(self):
+    def get_output_names_of_cutadapt(self):
         return "Read 1 Output", "Read 2 Output"
 
-    def run_tool_with_Inputfiles(self, tool_name):
-        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
-        inputs = self.get_Inputs(self.input_files)
+    def run_tool_with_input_files(self, tool_name):
+        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
+        inputs = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs)
-        super().update_Dataset_names(self.get_new_Names_for_Dataset(), self.get_Output_Names_Of_Cutadapt())
+        super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_cutadapt())
 
 
 class SortMeRNATool(Tool):
@@ -322,13 +347,14 @@ class SortMeRNATool(Tool):
     PAIRED_TYPE = '--paired_out'
     ALIGNED_FASTX_OTHER = 'True'
     LOG = 'True'
+    INPUT_DATABASES = 'input_databases'
 
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
         self.tool_name = "Filter with SortMeRNA"
 
-    def get_Inputs(self, inputs_files):
+    def get_inputs(self, inputs_files):
         input_file_1, input_file_2 = inputs_files
         inputs = {
             'sequencing_type|sequencing_type_selector': 'paired',
@@ -340,32 +366,24 @@ class SortMeRNATool(Tool):
             },
             'sequencing_type|paired_type': self.PAIRED_TYPE,
             'databases_type|databases_selector': self.DATABASES_SELECTOR,
-            'databases_type|input_databases': [
-                '2.1b-silva-arc-16s-id95',
-                '2.1b-silva-euk-28s-id98',
-                '2.1b-silva-euk-18s-id95',
-                '2.1b-silva-bac-23s-id98',
-                '2.1b-silva-bac-16s-id90',
-                '2.1b-rfam-5.8s-database-id98',
-                '2.1b-rfam-5s-database-id98',
-                '2.1b-silva-arc-23s-id98'
-            ],
+            'databases_type|input_databases': self.get_datatables(),
             'aligned_fastx|other': self.ALIGNED_FASTX_OTHER,
             'log': self.LOG
         }
         return inputs
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         return "QC controlled forward reads", "QC controlled reverse reads"
 
-    def run_tool_with_Inputfiles(self, tool_name):
-        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
-        inputs = self.get_Inputs(self.input_files)
+    def run_tool_with_input_files(self, tool_name):
+        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
+        inputs = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs)
 
-    def get_Datatables(self):
-        databases = super().get_Datatables(self.tool_name, "input_databases")
+    def get_datatables(self):
+        databases = super().get_datatables(self.tool_name, self.INPUT_DATABASES)
         pprint(databases)
+        return databases
 
 
 class FASTQinterlacerTool(Tool):
@@ -374,7 +392,7 @@ class FASTQinterlacerTool(Tool):
         self.history_id = history_id
         self.tool_name = "FASTQ interlacer"
 
-    def get_Inputs(self, inputs_files: List[str]):
+    def get_inputs(self, inputs_files: List[str]):
         input_file_1, input_file_2 = inputs_files
         inputs = {
             'reads|input1_file': {
@@ -386,20 +404,20 @@ class FASTQinterlacerTool(Tool):
         }
         return inputs
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         return "Unaligned forward reads", "Unaligned reverse reads"
 
-    def get_new_Names_for_Dataset(self):
+    def get_new_names_for_dataset(self):
         return ["Interlaced non rRNA reads"]
 
-    def get_Output_Names_Of_Cutadapt(self):
+    def get_output_names_of_interlacer(self):
         return ["FASTQ interlacer pairs"]
 
-    def run_tool_with_Inputfiles(self, tool_name: str):
-        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
-        inputs = self.get_Inputs(self.input_files)
+    def run_tool_with_input_files(self, tool_name: str):
+        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
+        inputs = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs)
-        super().update_Dataset_names(self.get_new_Names_for_Dataset(), self.get_Output_Names_Of_Cutadapt())
+        super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_interlacer())
 
 
 class MetaPhlAnTool(Tool):
@@ -413,7 +431,7 @@ class MetaPhlAnTool(Tool):
         self.history_id = history_id
         self.tool_name = "MetaPhlAn"
 
-    def get_Inputs(self, inputs_files: List[str]):
+    def get_inputs(self, inputs_files: List[str]):
         input_file_1, input_file_2 = inputs_files
         inputs = {
             'inputs|in|raw_in|selector': self.SELECTOR,
@@ -429,24 +447,28 @@ class MetaPhlAnTool(Tool):
         }
         return inputs
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         return "QC controlled forward reads", "QC controlled reverse reads"
 
-    def run_tool_with_Inputfiles(self, tool_name: str):
-        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames())
-        inputs = self.get_Inputs(self.input_files)
+    def run_tool_with_input_files(self, tool_name: str):
+        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
+        inputs = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs)
 
 
 class HUMAnNTool(Tool):
     SELECTOR = 'bypass_taxonomic_profiling'
+    HUMAnN_NUCLEOTIDE_DATABASE = 'chocophlan-full-3.6.0-29032023'
+    HUMAnN_PROTEIN_DATABASE = 'uniref-uniref90_diamond-3.0.0-13052021'
 
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
         self.tool_name = "HUMAnN"
+        self.nucleotide_database = []
+        self.protein_database = []
 
-    def get_Inputs(self, inputs_files: List[str]):
+    def get_inputs(self, inputs_files: List[str], nucleotide_database, protein_database):
         input_file_1, input_file_2 = inputs_files
         inputs = {
             'in|input': {
@@ -456,12 +478,12 @@ class HUMAnNTool(Tool):
             'wf|bypass_taxonomic_profiling|--taxonomic-profile': {
                 'values': input_file_2
             },
-            'wf|nucleotide_search|nucleotide_db|nucleotide_database': 'chocophlan-full-3.6.0-29032023',
-            'wf|translated_search|protein_db|protein_database': 'uniref-uniref90_diamond-3.0.0-13052021'
+            'wf|nucleotide_search|nucleotide_db|nucleotide_database': nucleotide_database,
+            'wf|translated_search|protein_db|protein_database': protein_database
         }
         return inputs
 
-    def get_Datasetnames(self):
+    def get_dataset_names(self):
         return "Interlaced non rRNA reads", "Predicted taxon relative abundances"
 
     def get_input_data_ids(self, dataset_names: Optional[str]):
@@ -477,16 +499,23 @@ class HUMAnNTool(Tool):
 
         return dataset_ids
 
-    def run_tool_with_Inputfiles(self, tool_name: str):
+    def run_tool_with_input_files(self, tool_name: str):
         _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
-        input_data_ids = self.get_input_data_ids(self.get_Datasetnames())
+        input_data_ids = self.get_input_data_ids(self.get_dataset_names())
         self.input_files = super().get_input_files(input_data_ids)
-        inputs = self.get_Inputs(self.input_files)
+        self.get_datatables()
+        inputs = self.get_inputs(
+            self.input_files,
+            nucleotide_database=self.HUMAnN_NUCLEOTIDE_DATABASE,
+            protein_database=self.HUMAnN_PROTEIN_DATABASE
+        )
         super().run_tool(inputs=inputs)
 
-    def get_Datatables(self):
-        databases = super().get_Datatables(self.tool_name, "nucleotide_database")
-        pprint(databases)
+    def get_datatables(self):
+        self.nucleotide_database = super().get_datatables(self.tool_name, "nucleotide_database")
+        self.protein_database = super().get_datatables(self.tool_name, "protein_database")
+        pprint(self.nucleotide_database)
+        pprint(self.protein_database)
 
 
 class RenormalizeTool(Tool):
@@ -506,11 +535,11 @@ class RenormalizeTool(Tool):
         }
         return inputs
 
-    def get_Datasetnames(self, name: str):
+    def get_dataset_names(self, name: str):
         self.pathway_name = name
         return [name]
 
-    def get_new_Names_for_Dataset(self):
+    def get_new_names_for_dataset(self):
         name = ""
         if self.pathway_name == "Gene families and their abundance":
             name = "Normalized gene families"
@@ -518,11 +547,11 @@ class RenormalizeTool(Tool):
             name = "Normalized pathways"
         return [name]
 
-    def get_Output_Names_Of_Cutadapt(self):
+    def get_output_names_of_renormalize(self):
         return ["Renormalize"]
 
-    def run_tool_with_Inputfiles(self, tool_name: str):
-        super().run_tool_with_Inputfiles(tool_name, self.get_Datasetnames(self.pathway_name))
+    def run_tool_with_input_files(self, tool_name: str):
+        super().run_tool_with_input_files(tool_name, self.get_dataset_names(self.pathway_name))
         inputs = self.get_Inputs(self.input_files)
         super().run_tool(inputs=inputs)
-        super().update_Dataset_names(self.get_new_Names_for_Dataset(), self.get_Output_Names_Of_Cutadapt())
+        super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_renormalize())

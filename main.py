@@ -33,19 +33,19 @@ def main(server: str, api_key: str):
     gi.upload_file(file_reverse, "T1A_reverse")
 
     for tool in tools:
-        tool.run_tool_with_Inputfiles(tool.tool_name)
+        tool.run_tool_with_input_files(tool.tool_name)
 
     re = RenormalizeTool(server=server, api_key=api_key, history_id=gi.history_id)
     datasets_to_check = ["Gene families and their abundance", "Pathways and their abundance"]
     for dataset in datasets_to_check:
-        re.get_Datasetnames(dataset)
-        re.run_tool_with_Inputfiles("Renormalize")
+        re.get_dataset_names(dataset)
+        re.run_tool_with_input_files("Renormalize")
 
 
 def check_connection(server: str, api_key: str):
     gi = Tool(server, api_key)
     while True:
-        time.sleep(60)
+        time.sleep(30)
         gi.connect_to_galaxy_with_retry()
 
 
@@ -55,17 +55,17 @@ def get_Databases(server: str, api_key: str):
     gi.get_history_id(history_name=history_name)
     si = SortMeRNATool(server, api_key, gi.history_id)
     hu = HUMAnNTool(server, api_key, gi.history_id)
-    si.get_Datatables()
-    hu.get_Datatables()
+    si.get_datatables()
+    hu.get_datatables()
 
 
 if __name__ == '__main__':
-    #process1 = multiprocessing.Process(target=main, args=[server, api_key])
-    #process2 = multiprocessing.Process(target=check_connection, args=[server, api_key])
+    process1 = multiprocessing.Process(target=main, args=[server, api_key])
+    process2 = multiprocessing.Process(target=check_connection, args=[server, api_key])
     process3 = multiprocessing.Process(target=get_Databases, args=[server, api_key])
-    #process1.start()
-    #process2.start()
+    process1.start()
+    process2.start()
     process3.start()
-    #process1.join()
-    #process2.terminate()
+    process1.join()
+    process2.terminate()
     process3.join()

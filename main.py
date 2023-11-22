@@ -49,23 +49,10 @@ def check_connection(server: str, api_key: str):
         gi.connect_to_galaxy_with_retry()
 
 
-def get_Databases(server: str, api_key: str):
-    gi = Tool(server, api_key)
-    history_name = "Metatranscriptomics Coding 5"
-    gi.get_history_id(history_name=history_name)
-    si = SortMeRNATool(server, api_key, gi.history_id)
-    hu = HUMAnNTool(server, api_key, gi.history_id)
-    si.get_datatables()
-    hu.get_datatables()
-
-
 if __name__ == '__main__':
     process1 = multiprocessing.Process(target=main, args=[server, api_key])
     process2 = multiprocessing.Process(target=check_connection, args=[server, api_key])
-    process3 = multiprocessing.Process(target=get_Databases, args=[server, api_key])
     process1.start()
     process2.start()
-    process3.start()
     process1.join()
     process2.terminate()
-    process3.join()

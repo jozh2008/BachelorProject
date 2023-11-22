@@ -3,6 +3,8 @@ from bioblend import ConnectionError
 from pprint import pprint, PrettyPrinter
 import re
 import time
+import csv
+from datetime import datetime
 from typing import (
     List,
     Dict,
@@ -124,7 +126,8 @@ class Tool:
 
     def get_input_files(self, input_data_ids: List[str]):
         """
-        return list with input_file format
+        return list with input_file format of the datasets
+        which has no errors
         input_files = [
             {
                 'src': 'hda',
@@ -132,7 +135,14 @@ class Tool:
             }
         ]
         """
-        return [{'src': 'hda', 'id': data_id} for data_id in input_data_ids]
+        valid_inputs = []
+        for data_id in input_data_ids:
+            dataset_info = self.gi.datasets.show_dataset(data_id)
+            if dataset_info.get('state') != 'error':
+                valid_inputs.append({'src': 'hda', 'id': data_id})
+
+        # return [{'src': 'hda', 'id': data_id} for data_id in input_data_ids]
+        return valid_inputs
 
     def run_tool(self, inputs: Dict):
         job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs)
@@ -171,6 +181,25 @@ class Tool:
             pp = PrettyPrinter(indent=4, stream=file)
             pp.pprint(data)
         file.close()
+
+    def is_row_present(self, file_path, new_row):
+        # Check if the new_row is already present in the file
+        with open(file_path, "r", newline="", encoding="utf-8") as tsv_file:
+            reader = csv.reader(tsv_file, delimiter='\t')
+            for row in reader:
+                if row[1:] == new_row[0][1:]:
+                    return True
+
+        return False
+
+    def add_row_if_not_present(self, file_path, new_row):
+        # Check if the row is not already present
+        if not self.is_row_present(file_path, new_row):
+            # Append the new_row to the TSV file
+            with open(file_path, "a", newline="", encoding="utf-8") as tsv_file:
+                writer = csv.writer(tsv_file, delimiter='\t')
+                for row in new_row:
+                    writer.writerow(row)
 
     def get_databases(self, inputs):
         # json_extract returns for every database a list with name, database_name, selected
@@ -233,7 +262,7 @@ class Tool:
         databases = self.get_databases(flattened_list)
 
         # return the result
-        return (databases)
+        return databases
 
 
 class FastQCTool(Tool):
@@ -460,6 +489,7 @@ class HUMAnNTool(Tool):
     SELECTOR = 'bypass_taxonomic_profiling'
     HUMAnN_NUCLEOTIDE_DATABASE = 'chocophlan-full-3.6.0-29032023'
     HUMAnN_PROTEIN_DATABASE = 'uniref-uniref90_diamond-3.0.0-13052021'
+    FILE_PATH = "incorrect_database_combination.tsv"
 
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
@@ -504,18 +534,28 @@ class HUMAnNTool(Tool):
         input_data_ids = self.get_input_data_ids(self.get_dataset_names())
         self.input_files = super().get_input_files(input_data_ids)
         self.get_datatables()
-        inputs = self.get_inputs(
-            self.input_files,
-            nucleotide_database=self.HUMAnN_NUCLEOTIDE_DATABASE,
-            protein_database=self.HUMAnN_PROTEIN_DATABASE
-        )
-        super().run_tool(inputs=inputs)
+        # run all possible options of the databases
+        for nucleotide_db in self.nucleotide_database:
+            for protein_db in self.protein_database:
+                inputs = self.get_inputs(
+                    self.input_files,
+                    nucleotide_database=nucleotide_db,
+                    protein_database=protein_db
+                )
+                try:
+                    super().run_tool(inputs=inputs)
+                except Exception:
+                    print(f"Exceptions for combination of database{nucleotide_db} and {protein_db}")
+                    invalid_combination = [[datetime.now().strftime('%Y-%m-%d %H:%M:%S'), nucleotide_db, protein_db]]
+                    super().add_row_if_not_present(self.FILE_PATH, invalid_combination)
+                    if super().is_row_present(self.FILE_PATH, invalid_combination):
+                        print(f"Data with timestamp is already written to {self.FILE_PATH}")
+                    else:
+                        print(f"Data with timestamp has been written to {self.FILE_PATH}")
 
     def get_datatables(self):
         self.nucleotide_database = super().get_datatables(self.tool_name, "nucleotide_database")
         self.protein_database = super().get_datatables(self.tool_name, "protein_database")
-        pprint(self.nucleotide_database)
-        pprint(self.protein_database)
 
 
 class RenormalizeTool(Tool):
@@ -552,6 +592,7 @@ class RenormalizeTool(Tool):
 
     def run_tool_with_input_files(self, tool_name: str):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names(self.pathway_name))
-        inputs = self.get_Inputs(self.input_files)
-        super().run_tool(inputs=inputs)
+        for input_file in self.input_files:
+            inputs = self.get_Inputs(input_file)
+            super().run_tool(inputs=inputs)
         super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_renormalize())

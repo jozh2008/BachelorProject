@@ -19,7 +19,6 @@ class Tool:
         self.tool_id = ""
         self.input_files = []
         self.json_input = []
-        self.state_input ={}
 
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -266,7 +265,7 @@ class Tool:
             return arr
         values = extract(obj, arr, key)
         return values
-
+    
     def extract_keys(self, data, keys=[]):
         if isinstance(data, dict):
             for key, value in data.items():
@@ -275,6 +274,7 @@ class Tool:
         elif isinstance(data, list):
             for item in data:
                 self.extract_keys(item, keys)
+        return keys
     
     def extract_keys_with_path(self, data, path=[], keys=[]):
         if isinstance(data, dict):
@@ -286,6 +286,7 @@ class Tool:
             for i, item in enumerate(data):
                 current_path = path + [f"_{i}"]
                 self.extract_keys_with_path(item, current_path, keys)
+        return keys
 
     def get_datatables(self, tool_name, database_name):
         # Step 1: Get tool input options
@@ -310,25 +311,14 @@ class Tool:
         _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
         tools = self.gi.tools.build(tool_id=self.tool_id, history_id=self.history_id)
         input_states = (tools["state_inputs"])
+        pprint(input_states)
         self.write_to_file(input_states, "input_states_multiqc.txt")
-        lst = []
-        lst2 = []
-        inputs3 = {
-            'results_0|software_cond|software': 'fastqc',
-        }
-        a = (self.gi.tools.build(tool_id=self.tool_id, inputs=inputs3, history_id=self.history_id)["state_inputs"])
-        #pprint(input_states)
-        self.state_input = input_states
-        self.extract_keys(input_states,lst)
-        pprint(a)
-        self.extract_keys_with_path(a,keys=lst2)
-        pprint(lst)
-        pprint(lst2)
+        lst = self.extract_keys(input_states)
+        lst2 = self.extract_keys_with_path(input_states)
         inputs_opitons = self.get_tool_input_options(tool_name)
-
         dictonary = (self.process_data(lst, inputs_options=inputs_opitons))
         dict2  = self.genarate_input_file(lst2, dictonary)
-        pprint(self.build_tool(dict2))
+        return(self.build_tool(dict2))
 
 
     def build_tool(self, dictionary):
@@ -357,16 +347,14 @@ class Tool:
 
     def process_data(self, keys, inputs_options):
         result_dict = {}
-        pprint(inputs_options)
         for key in keys:
             # Extract values based on the key
-            print(key)
             extracted_values = self.json_extract_v2(inputs_options, key)
-
             # Check if the extracted values are not empty
             if extracted_values:
                 flattened_values = self.get_flattend_list(extracted_values)
                 databases = self.get_databases(flattened_values)
+                #pprint(databases)
 
                 # Store databases in the result_dict
                 result_dict[key] = databases
@@ -376,10 +364,11 @@ class Tool:
     def genarate_input_file(self, keys, result_dict):
         input_dict = {}
         for key in keys:
-            for value in (key.split("|")):
-                for k,v in result_dict.items():
-                    if value == k:
-                        input_dict[key] = v
+            value = key.split("|")[-1]
+            for k,v in result_dict.items():
+                if value == k:
+                    input_dict[key] = v
+            
         return (input_dict)
 
 
@@ -446,7 +435,27 @@ class MultiQCTool(Tool):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names())
         inputs = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs)
-
+    
+    def show_tool_input(self):
+        a = super().show_tool_input(self.tool_name)
+        inputs_options = self.get_tool_input_options(self.tool_name)
+        lst2 =[]
+        lst3 = []
+        for i in a:
+            b = self.extract_keys(data=i)
+            lst2.append(b)
+        c = self.remove_duplicate(b)
+        extracted_values = []
+        for key in c:
+            # Extract values based on the key
+            extracted_values.append((self.json_extract_v2(inputs_options, key),key))
+            # Check if the extracted values are not empty
+        modifiyed_values = self.remove_duplicate(extracted_values)
+        pprint(modifiyed_values)
+        for i in modifiyed_values:
+            if i[0]:
+                lst3.append(i)
+        print(lst3)
 
 class CutadaptTool(Tool):
     LIBRARY_TYPE = 'paired'

@@ -38,7 +38,7 @@ class GalaxyWorkflow:
     def run_tools(self):
         for tool in self.tools:
             tool.run_tool_with_input_files(tool.tool_name)
-            tool.show_tool_input(tool.tool_name)
+            tool.show_tool_input()
             pprint(tool.json_input)
 
     def run_renormalize_tool(self, datasets_to_check):

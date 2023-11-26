@@ -1,0 +1,10 @@
+{   'comment': '',
+    'export': False,
+    'flat': False,
+    'results': [   {   '__index__': 0,
+                       'software_cond': {   '__current_case__': 0,
+                                            'input': {   'values': [   {   'id': '4838ba20a6d86765207731ee7c8b5ac3',
+                                                                           'src': 'hda'}]},
+                                            'software': 'bamtools'}}],
+    'saveLog': False,
+    'title': ''}

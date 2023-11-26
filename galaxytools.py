@@ -4,7 +4,7 @@ from pprint import pprint, PrettyPrinter
 import re
 import time
 import csv
-from datetime import datetime
+# from datetime import datetime
 from typing import (
     List,
     Dict,
@@ -18,6 +18,8 @@ class Tool:
         self.history_id = ""
         self.tool_id = ""
         self.input_files = []
+        self.json_input = []
+        self.state_input ={}
 
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -89,7 +91,7 @@ class Tool:
     # wait until job is done, cause tools are dependent of each other
     def wait_for_job(self, job_id: str):
         try:
-            self.gi.jobs.wait_for_job(job_id=job_id)
+            self.gi.jobs.wait_for_job(job_id=job_id,interval=30)
         except ConnectionError:
             self.connect_to_galaxy_with_retry()
 
@@ -140,11 +142,10 @@ class Tool:
             dataset_info = self.gi.datasets.show_dataset(data_id)
             if dataset_info.get('state') != 'error':
                 valid_inputs.append({'src': 'hda', 'id': data_id})
-
-        # return [{'src': 'hda', 'id': data_id} for data_id in input_data_ids]
         return valid_inputs
 
     def run_tool(self, inputs: Dict):
+        # job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs, input_format="21.01")
         job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs)
         job_id = job["jobs"][0]["id"]
         self.wait_for_job(job_id)
@@ -176,8 +177,8 @@ class Tool:
         input_options = tool_details.get('inputs', {})
         return input_options
 
-    def write_to_file(self, data):
-        with open('output.txt', 'w') as file:
+    def write_to_file(self, data, name):
+        with open(name, 'w') as file:
             pp = PrettyPrinter(indent=4, stream=file)
             pp.pprint(data)
         file.close()
@@ -202,8 +203,10 @@ class Tool:
                     writer.writerow(row)
 
     def get_databases(self, inputs):
-        # json_extract returns for every database a list with name, database_name, selected
-        # return every database_name in a list
+        """
+        json_extract returns for every database a list with name, database_name, selected
+        return every database_name in a list
+        """
         return [inputs[i] for i in range(1, len(inputs), 3)]
 
     def remove_duplicate(self, orginal_list):
@@ -244,6 +247,45 @@ class Tool:
             return arr
         values = extract(obj, arr, key)
         return values
+    
+    def json_extract_v2(self, obj, key):
+        """Recursively fetch values from nested JSON."""
+        arr = []
+
+        def extract(obj, arr: list, key):
+            """Recursively search for values of key in JSON tree."""
+            if isinstance(obj, dict):
+                for _, v in obj.items():
+                    if isinstance(v, (dict, list)):
+                        extract(v, arr, key)
+                    if v == key and obj.get("model_class") == 'SelectToolParameter':
+                        arr.append(obj.get("options", {}))
+            elif isinstance(obj, list):
+                for item in obj:
+                    extract(item, arr, key)
+            return arr
+        values = extract(obj, arr, key)
+        return values
+
+    def extract_keys(self, data, keys=[]):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                keys.append(key)
+                self.extract_keys(value, keys)
+        elif isinstance(data, list):
+            for item in data:
+                self.extract_keys(item, keys)
+    
+    def extract_keys_with_path(self, data, path=[], keys=[]):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                current_path = path + [f"|{key}" if path != [] else f"{key}"]
+                keys.append("".join(current_path))
+                self.extract_keys_with_path(value, current_path, keys)
+        elif isinstance(data, list):
+            for i, item in enumerate(data):
+                current_path = path + [f"_{i}"]
+                self.extract_keys_with_path(item, current_path, keys)
 
     def get_datatables(self, tool_name, database_name):
         # Step 1: Get tool input options
@@ -263,6 +305,83 @@ class Tool:
 
         # return the result
         return databases
+    
+    def show_tool_input(self, tool_name):
+        _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
+        tools = self.gi.tools.build(tool_id=self.tool_id, history_id=self.history_id)
+        input_states = (tools["state_inputs"])
+        self.write_to_file(input_states, "input_states_multiqc.txt")
+        lst = []
+        lst2 = []
+        inputs3 = {
+            'results_0|software_cond|software': 'fastqc',
+        }
+        a = (self.gi.tools.build(tool_id=self.tool_id, inputs=inputs3, history_id=self.history_id)["state_inputs"])
+        #pprint(input_states)
+        self.state_input = input_states
+        self.extract_keys(input_states,lst)
+        pprint(a)
+        self.extract_keys_with_path(a,keys=lst2)
+        pprint(lst)
+        pprint(lst2)
+        inputs_opitons = self.get_tool_input_options(tool_name)
+
+        dictonary = (self.process_data(lst, inputs_options=inputs_opitons))
+        dict2  = self.genarate_input_file(lst2, dictonary)
+        pprint(self.build_tool(dict2))
+
+
+    def build_tool(self, dictionary):
+        # Initialize an empty list to store the state_inputs for each tool
+        state_inputs_list = []
+
+        # Iterate through each key-value pair in the dictionary
+        for key, values in dictionary.items():
+            # Initialize a dictionary for inputs
+            inputs = {}
+
+            # Iterate through the values for the current key
+            for value in values:
+                # Assign the current key and value to the inputs dictionary
+                inputs[key] = value
+
+                # Build the tool using Galaxy API
+                tool_result = self.gi.tools.build(tool_id=self.tool_id, inputs=inputs, history_id=self.history_id)
+
+                # Extract and append the 'state_inputs' to the list
+                state_inputs_list.append(tool_result["state_inputs"])
+
+        # Return the list of state_inputs for all tools
+        return state_inputs_list
+                              
+
+    def process_data(self, keys, inputs_options):
+        result_dict = {}
+        pprint(inputs_options)
+        for key in keys:
+            # Extract values based on the key
+            print(key)
+            extracted_values = self.json_extract_v2(inputs_options, key)
+
+            # Check if the extracted values are not empty
+            if extracted_values:
+                flattened_values = self.get_flattend_list(extracted_values)
+                databases = self.get_databases(flattened_values)
+
+                # Store databases in the result_dict
+                result_dict[key] = databases
+
+        return result_dict
+    
+    def genarate_input_file(self, keys, result_dict):
+        input_dict = {}
+        for key in keys:
+            for value in (key.split("|")):
+                for k,v in result_dict.items():
+                    if value == k:
+                        input_dict[key] = v
+        return (input_dict)
+
 
 
 class FastQCTool(Tool):
@@ -318,6 +437,7 @@ class MultiQCTool(Tool):
             }
         }
         return inputs
+    
 
     def get_dataset_names(self):
         return "FastQC on data 1: RawData", "FastQC on data 2: RawData"
@@ -535,6 +655,7 @@ class HUMAnNTool(Tool):
         self.input_files = super().get_input_files(input_data_ids)
         self.get_datatables()
         # run all possible options of the databases
+        """
         for nucleotide_db in self.nucleotide_database:
             for protein_db in self.protein_database:
                 inputs = self.get_inputs(
@@ -552,6 +673,13 @@ class HUMAnNTool(Tool):
                         print(f"Data with timestamp is already written to {self.FILE_PATH}")
                     else:
                         print(f"Data with timestamp has been written to {self.FILE_PATH}")
+        """
+        inputs = self.get_inputs(
+            self.input_files,
+            nucleotide_database=self.HUMAnN_NUCLEOTIDE_DATABASE,
+            protein_database=self.HUMAnN_PROTEIN_DATABASE
+        )
+        super().run_tool(inputs=inputs)
 
     def get_datatables(self):
         self.nucleotide_database = super().get_datatables(self.tool_name, "nucleotide_database")

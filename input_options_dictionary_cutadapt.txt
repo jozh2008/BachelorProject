@@ -1,0 +1,1166 @@
+[   {   'inputs': [   {   'argument': None,
+                          'edam': {   'edam_data': [   'data_2044',
+                                                       'data_2044',
+                                                       'data_2044'],
+                                      'edam_formats': [   'format_1930',
+                                                          'format_1930',
+                                                          'format_1929']},
+                          'extensions': ['fastq.gz', 'fastq', 'fasta'],
+                          'help': 'Should be of datatype "fastq.gz"or "fasta"',
+                          'hidden': False,
+                          'is_dynamic': False,
+                          'label': 'FASTQ/A file #1',
+                          'model_class': 'DataToolParameter',
+                          'multiple': False,
+                          'name': 'input_1',
+                          'optional': False,
+                          'options': {'hda': [], 'hdca': []},
+                          'refresh_on_change': True,
+                          'tag': None,
+                          'type': 'data',
+                          'value': None},
+                      {   'argument': None,
+                          'edam': {   'edam_data': [   'data_2044',
+                                                       'data_2044',
+                                                       'data_2044'],
+                                      'edam_formats': [   'format_1930',
+                                                          'format_1930',
+                                                          'format_1929']},
+                          'extensions': ['fastq.gz', 'fastq', 'fasta'],
+                          'help': 'Should be of datatype "fastq.gz"or "fasta"',
+                          'hidden': False,
+                          'is_dynamic': False,
+                          'label': 'FASTQ/A file #2',
+                          'model_class': 'DataToolParameter',
+                          'multiple': False,
+                          'name': 'input_2',
+                          'optional': False,
+                          'options': {'hda': [], 'hdca': []},
+                          'refresh_on_change': True,
+                          'tag': None,
+                          'type': 'data',
+                          'value': None},
+                      {   'expanded': True,
+                          'help': None,
+                          'inputs': [   {   'default': 0,
+                                            'help': 'Sequence of an adapter '
+                                                    "ligated to the 3' end "
+                                                    '(paired data: of the '
+                                                    'first read). The adapter '
+                                                    'and subsequent bases are '
+                                                    "trimmed. If a '$' "
+                                                    'character is appended '
+                                                    "('anchoring'), the "
+                                                    'adapter is only found if '
+                                                    'it is a suffix of the '
+                                                    'read. To search for a '
+                                                    'linked adapter, separate '
+                                                    'the 2 sequences with 3 '
+                                                    'dots '
+                                                    '(ADAPTER1...ADAPTER2), '
+                                                    'see Help below.',
+                                            'inputs': [   {   'cases': [   {   'inputs': [   {   'area': False,
+                                                                                                 'argument': None,
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'name '
+                                                                                                          '(Optional '
+                                                                                                          'if '
+                                                                                                          'Multiple '
+                                                                                                          'output '
+                                                                                                          'is '
+                                                                                                          "'No')",
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'adapter_name',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': ''},
+                                                                                             {   'area': False,
+                                                                                                 'argument': '-a',
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'sequence',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'adapter',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': 'AATTGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'user'},
+                                                                           {   'inputs': [   {   'argument': '-a',
+                                                                                                 'display': None,
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': True,
+                                                                                                 'label': 'Choose '
+                                                                                                          "3' "
+                                                                                                          'adapter',
+                                                                                                 'model_class': 'SelectToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'adapter',
+                                                                                                 'optional': False,
+                                                                                                 'options': [   [   'Dummy-Adapter '
+                                                                                                                    '(do '
+                                                                                                                    'not '
+                                                                                                                    'use '
+                                                                                                                    'me)',
+                                                                                                                    'TGTAGGCC',
+                                                                                                                    False]],
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'textable': False,
+                                                                                                 'type': 'select',
+                                                                                                 'value': 'TGTAGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'builtin'},
+                                                                           {   'inputs': [   {   'argument': '-a',
+                                                                                                 'edam': {   'edam_data': [   'data_2044'],
+                                                                                                             'edam_formats': [   'format_1929']},
+                                                                                                 'extensions': [   'fasta'],
+                                                                                                 'help': 'Should '
+                                                                                                         'be '
+                                                                                                         'of '
+                                                                                                         'datatype '
+                                                                                                         'FASTA',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Choose '
+                                                                                                          'file '
+                                                                                                          'containing '
+                                                                                                          "3' "
+                                                                                                          'adapters',
+                                                                                                 'model_class': 'DataToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'adapter_file',
+                                                                                                 'optional': False,
+                                                                                                 'options': {   'hda': [   ],
+                                                                                                                'hdca': [   ]},
+                                                                                                 'refresh_on_change': True,
+                                                                                                 'tag': None,
+                                                                                                 'type': 'data',
+                                                                                                 'value': None}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'file'}],
+                                                              'model_class': 'Conditional',
+                                                              'name': 'adapter_source',
+                                                              'test_param': {   'argument': None,
+                                                                                'display': None,
+                                                                                'help': '',
+                                                                                'hidden': False,
+                                                                                'is_dynamic': False,
+                                                                                'label': 'Source',
+                                                                                'model_class': 'SelectToolParameter',
+                                                                                'multiple': False,
+                                                                                'name': 'adapter_source_list',
+                                                                                'optional': False,
+                                                                                'options': [   [   'Standard '
+                                                                                                   '(select '
+                                                                                                   'from '
+                                                                                                   'the '
+                                                                                                   'list '
+                                                                                                   'below)',
+                                                                                                   'builtin',
+                                                                                                   True],
+                                                                                               [   'Enter '
+                                                                                                   'custom '
+                                                                                                   'sequence',
+                                                                                                   'user',
+                                                                                                   False],
+                                                                                               [   'File '
+                                                                                                   'from '
+                                                                                                   'history',
+                                                                                                   'file',
+                                                                                                   False]],
+                                                                                'refresh_on_change': True,
+                                                                                'textable': False,
+                                                                                'type': 'select',
+                                                                                'value': 'builtin'},
+                                                              'type': 'conditional'},
+                                                          {   'argument': None,
+                                                              'falsevalue': '',
+                                                              'help': '',
+                                                              'hidden': False,
+                                                              'is_dynamic': False,
+                                                              'label': 'Disallow '
+                                                                       'indels '
+                                                                       'for '
+                                                                       'this '
+                                                                       'adapter',
+                                                              'model_class': 'BooleanToolParameter',
+                                                              'name': 'single_noindels',
+                                                              'optional': False,
+                                                              'refresh_on_change': False,
+                                                              'truevalue': ';noindels',
+                                                              'type': 'boolean',
+                                                              'value': False}],
+                                            'max': '__Infinity__',
+                                            'min': 0,
+                                            'model_class': 'Repeat',
+                                            'name': 'adapters',
+                                            'title': "3' (End) Adapters",
+                                            'type': 'repeat'},
+                                        {   'default': 0,
+                                            'help': 'Sequence of an adapter '
+                                                    "ligated to the 5' end "
+                                                    '(paired data: of the '
+                                                    'first read). The adapter '
+                                                    'and any preceding bases '
+                                                    'are trimmed. Partial '
+                                                    "matches at the 5' end are "
+                                                    "allowed. If a '^' "
+                                                    'character is prepended '
+                                                    "('anchoring'), the "
+                                                    'adapter is only found if '
+                                                    'it is a prefix of the '
+                                                    'read. To search for a '
+                                                    'linked adapter, separate '
+                                                    'the 2 sequences with 3 '
+                                                    'dots '
+                                                    '(ADAPTER1...ADAPTER2), '
+                                                    'see Help below.',
+                                            'inputs': [   {   'cases': [   {   'inputs': [   {   'area': False,
+                                                                                                 'argument': None,
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'adapter '
+                                                                                                          'name '
+                                                                                                          '(Optional '
+                                                                                                          'if '
+                                                                                                          'Multiple '
+                                                                                                          'output '
+                                                                                                          'is '
+                                                                                                          "'No')",
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'front_adapter_name',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': ''},
+                                                                                             {   'area': False,
+                                                                                                 'argument': '-g',
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'adapter '
+                                                                                                          'sequence',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'front_adapter',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': 'AATTGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'user'},
+                                                                           {   'inputs': [   {   'argument': '-g',
+                                                                                                 'display': None,
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': True,
+                                                                                                 'label': 'Choose '
+                                                                                                          "5' "
+                                                                                                          'adapter',
+                                                                                                 'model_class': 'SelectToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'front_adapter',
+                                                                                                 'optional': False,
+                                                                                                 'options': [   [   'Dummy-Adapter '
+                                                                                                                    '(do '
+                                                                                                                    'not '
+                                                                                                                    'use '
+                                                                                                                    'me)',
+                                                                                                                    'TGTAGGCC',
+                                                                                                                    False]],
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'textable': False,
+                                                                                                 'type': 'select',
+                                                                                                 'value': 'TGTAGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'builtin'},
+                                                                           {   'inputs': [   {   'argument': '-g',
+                                                                                                 'edam': {   'edam_data': [   'data_2044'],
+                                                                                                             'edam_formats': [   'format_1929']},
+                                                                                                 'extensions': [   'fasta'],
+                                                                                                 'help': 'Should '
+                                                                                                         'be '
+                                                                                                         'of '
+                                                                                                         'datatype '
+                                                                                                         '"FASTA"',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Choose '
+                                                                                                          'file '
+                                                                                                          'containing '
+                                                                                                          "5' "
+                                                                                                          'adapters',
+                                                                                                 'model_class': 'DataToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'front_adapter_file',
+                                                                                                 'optional': False,
+                                                                                                 'options': {   'hda': [   ],
+                                                                                                                'hdca': [   ]},
+                                                                                                 'refresh_on_change': True,
+                                                                                                 'tag': None,
+                                                                                                 'type': 'data',
+                                                                                                 'value': None}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'file'}],
+                                                              'model_class': 'Conditional',
+                                                              'name': 'front_adapter_source',
+                                                              'test_param': {   'argument': None,
+                                                                                'display': None,
+                                                                                'help': '',
+                                                                                'hidden': False,
+                                                                                'is_dynamic': False,
+                                                                                'label': 'Source',
+                                                                                'model_class': 'SelectToolParameter',
+                                                                                'multiple': False,
+                                                                                'name': 'front_adapter_source_list',
+                                                                                'optional': False,
+                                                                                'options': [   [   'Standard '
+                                                                                                   '(select '
+                                                                                                   'from '
+                                                                                                   'the '
+                                                                                                   'list '
+                                                                                                   'below)',
+                                                                                                   'builtin',
+                                                                                                   True],
+                                                                                               [   'Enter '
+                                                                                                   'custom '
+                                                                                                   'sequence',
+                                                                                                   'user',
+                                                                                                   False],
+                                                                                               [   'File '
+                                                                                                   'from '
+                                                                                                   'history',
+                                                                                                   'file',
+                                                                                                   False]],
+                                                                                'refresh_on_change': True,
+                                                                                'textable': False,
+                                                                                'type': 'select',
+                                                                                'value': 'builtin'},
+                                                              'type': 'conditional'},
+                                                          {   'argument': None,
+                                                              'falsevalue': '',
+                                                              'help': '',
+                                                              'hidden': False,
+                                                              'is_dynamic': False,
+                                                              'label': 'Disallow '
+                                                                       'indels '
+                                                                       'for '
+                                                                       'this '
+                                                                       'adapter',
+                                                              'model_class': 'BooleanToolParameter',
+                                                              'name': 'single_noindels',
+                                                              'optional': False,
+                                                              'refresh_on_change': False,
+                                                              'truevalue': ';noindels',
+                                                              'type': 'boolean',
+                                                              'value': False}],
+                                            'max': '__Infinity__',
+                                            'min': 0,
+                                            'model_class': 'Repeat',
+                                            'name': 'front_adapters',
+                                            'title': "5' (Front) Adapters",
+                                            'type': 'repeat'},
+                                        {   'default': 0,
+                                            'help': 'Sequence of an adapter '
+                                                    'that may be ligated to '
+                                                    "the 5' or 3' end (paired "
+                                                    'data: of the first read). '
+                                                    'Both types of matches as '
+                                                    "described under 3' und 5' "
+                                                    'Adapters are allowed. If '
+                                                    'the first base of the '
+                                                    'read is part of the '
+                                                    'match, the behavior is as '
+                                                    "with 5' Adapters, "
+                                                    "otherwise as with 3' "
+                                                    'Adapters. This option is '
+                                                    'mostly for rescuing '
+                                                    'failed library '
+                                                    'preparations - do not use '
+                                                    'if you know which end '
+                                                    'your adapter was ligated '
+                                                    'to!',
+                                            'inputs': [   {   'cases': [   {   'inputs': [   {   'area': False,
+                                                                                                 'argument': None,
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'or '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'name '
+                                                                                                          '(Optional '
+                                                                                                          'if '
+                                                                                                          'Multiple '
+                                                                                                          'output '
+                                                                                                          'is '
+                                                                                                          "'No')",
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'anywhere_adapter_name',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': ''},
+                                                                                             {   'area': False,
+                                                                                                 'argument': '-b',
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'or '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'sequence',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'anywhere_adapter',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': 'AATTGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'user'},
+                                                                           {   'inputs': [   {   'argument': '-b',
+                                                                                                 'display': None,
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': True,
+                                                                                                 'label': 'Choose '
+                                                                                                          "5' "
+                                                                                                          'or '
+                                                                                                          "3' "
+                                                                                                          'adapter',
+                                                                                                 'model_class': 'SelectToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'anywhere_adapter',
+                                                                                                 'optional': False,
+                                                                                                 'options': [   [   'Dummy-Adapter '
+                                                                                                                    '(do '
+                                                                                                                    'not '
+                                                                                                                    'use '
+                                                                                                                    'me)',
+                                                                                                                    'TGTAGGCC',
+                                                                                                                    False]],
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'textable': False,
+                                                                                                 'type': 'select',
+                                                                                                 'value': 'TGTAGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'builtin'},
+                                                                           {   'inputs': [   {   'argument': '-b',
+                                                                                                 'edam': {   'edam_data': [   'data_2044'],
+                                                                                                             'edam_formats': [   'format_1929']},
+                                                                                                 'extensions': [   'fasta'],
+                                                                                                 'help': 'Should '
+                                                                                                         'be '
+                                                                                                         'of '
+                                                                                                         'datatype '
+                                                                                                         '"FASTA"',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Choose '
+                                                                                                          'file '
+                                                                                                          'containing '
+                                                                                                          "3' "
+                                                                                                          'or '
+                                                                                                          "5' "
+                                                                                                          'adapters',
+                                                                                                 'model_class': 'DataToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'anywhere_adapter_file',
+                                                                                                 'optional': False,
+                                                                                                 'options': {   'hda': [   ],
+                                                                                                                'hdca': [   ]},
+                                                                                                 'refresh_on_change': True,
+                                                                                                 'tag': None,
+                                                                                                 'type': 'data',
+                                                                                                 'value': None}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'file'}],
+                                                              'model_class': 'Conditional',
+                                                              'name': 'anywhere_adapter_source',
+                                                              'test_param': {   'argument': None,
+                                                                                'display': None,
+                                                                                'help': '',
+                                                                                'hidden': False,
+                                                                                'is_dynamic': False,
+                                                                                'label': 'Source',
+                                                                                'model_class': 'SelectToolParameter',
+                                                                                'multiple': False,
+                                                                                'name': 'anywhere_adapter_source_list',
+                                                                                'optional': False,
+                                                                                'options': [   [   'Standard '
+                                                                                                   '(select '
+                                                                                                   'from '
+                                                                                                   'the '
+                                                                                                   'list '
+                                                                                                   'below)',
+                                                                                                   'builtin',
+                                                                                                   True],
+                                                                                               [   'Enter '
+                                                                                                   'custom '
+                                                                                                   'sequence',
+                                                                                                   'user',
+                                                                                                   False],
+                                                                                               [   'File '
+                                                                                                   'from '
+                                                                                                   'history',
+                                                                                                   'file',
+                                                                                                   False]],
+                                                                                'refresh_on_change': True,
+                                                                                'textable': False,
+                                                                                'type': 'select',
+                                                                                'value': 'builtin'},
+                                                              'type': 'conditional'},
+                                                          {   'argument': None,
+                                                              'falsevalue': '',
+                                                              'help': '',
+                                                              'hidden': False,
+                                                              'is_dynamic': False,
+                                                              'label': 'Disallow '
+                                                                       'indels '
+                                                                       'for '
+                                                                       'this '
+                                                                       'adapter',
+                                                              'model_class': 'BooleanToolParameter',
+                                                              'name': 'single_noindels',
+                                                              'optional': False,
+                                                              'refresh_on_change': False,
+                                                              'truevalue': ';noindels',
+                                                              'type': 'boolean',
+                                                              'value': False}],
+                                            'max': '__Infinity__',
+                                            'min': 0,
+                                            'model_class': 'Repeat',
+                                            'name': 'anywhere_adapters',
+                                            'title': "5' or 3' (Anywhere) "
+                                                     'Adapters',
+                                            'type': 'repeat'},
+                                        {   'area': False,
+                                            'argument': '--cut',
+                                            'datalist': [],
+                                            'help': 'Remove bases from each '
+                                                    'read (first read only if '
+                                                    'paired). If positive, '
+                                                    'remove bases from the '
+                                                    'beginning. If negative, '
+                                                    'remove bases from the '
+                                                    'end. This is applied '
+                                                    '*before* adapter '
+                                                    'trimming.',
+                                            'hidden': False,
+                                            'is_dynamic': False,
+                                            'label': 'Cut bases from reads '
+                                                     'before adapter trimming',
+                                            'max': None,
+                                            'min': None,
+                                            'model_class': 'IntegerToolParameter',
+                                            'name': 'cut',
+                                            'optional': True,
+                                            'refresh_on_change': False,
+                                            'type': 'integer',
+                                            'value': '0'}],
+                          'model_class': 'Section',
+                          'name': 'r1',
+                          'title': 'Read 1 Options',
+                          'type': 'section'},
+                      {   'expanded': True,
+                          'help': None,
+                          'inputs': [   {   'default': 0,
+                                            'help': 'Sequence of an adapter '
+                                                    "ligated to the 3' end of "
+                                                    'the second read in each '
+                                                    'pair. The adapter and '
+                                                    'subsequent bases are '
+                                                    "trimmed. If a '$' "
+                                                    'character is appended '
+                                                    "('anchoring'), the "
+                                                    'adapter is only found if '
+                                                    'it is a suffix of the '
+                                                    'read. To search for a '
+                                                    'linked adapter, separate '
+                                                    'the 2 sequences with 3 '
+                                                    'dots '
+                                                    '(ADAPTER1...ADAPTER2), '
+                                                    'see Help below.',
+                                            'inputs': [   {   'cases': [   {   'inputs': [   {   'area': False,
+                                                                                                 'argument': None,
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'name '
+                                                                                                          '(Optional)',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'adapter_name2',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': ''},
+                                                                                             {   'area': False,
+                                                                                                 'argument': '-A',
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'sequence',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'adapter2',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': 'AATTGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'user'},
+                                                                           {   'inputs': [   {   'argument': '-A',
+                                                                                                 'display': None,
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': True,
+                                                                                                 'label': 'Choose '
+                                                                                                          "3' "
+                                                                                                          'adapter',
+                                                                                                 'model_class': 'SelectToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'adapter2',
+                                                                                                 'optional': False,
+                                                                                                 'options': [   [   'Dummy-Adapter '
+                                                                                                                    '(do '
+                                                                                                                    'not '
+                                                                                                                    'use '
+                                                                                                                    'me)',
+                                                                                                                    'TGTAGGCC',
+                                                                                                                    False]],
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'textable': False,
+                                                                                                 'type': 'select',
+                                                                                                 'value': 'TGTAGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'builtin'},
+                                                                           {   'inputs': [   {   'argument': '-a',
+                                                                                                 'edam': {   'edam_data': [   'data_2044'],
+                                                                                                             'edam_formats': [   'format_1929']},
+                                                                                                 'extensions': [   'fasta'],
+                                                                                                 'help': 'Should '
+                                                                                                         'be '
+                                                                                                         'of '
+                                                                                                         'datatype '
+                                                                                                         '"FASTA"',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Choose '
+                                                                                                          'file '
+                                                                                                          'containing '
+                                                                                                          "3' "
+                                                                                                          'adapters',
+                                                                                                 'model_class': 'DataToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'adapter_file2',
+                                                                                                 'optional': False,
+                                                                                                 'options': {   'hda': [   ],
+                                                                                                                'hdca': [   ]},
+                                                                                                 'refresh_on_change': True,
+                                                                                                 'tag': None,
+                                                                                                 'type': 'data',
+                                                                                                 'value': None}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'file'}],
+                                                              'model_class': 'Conditional',
+                                                              'name': 'adapter_source2',
+                                                              'test_param': {   'argument': None,
+                                                                                'display': None,
+                                                                                'help': '',
+                                                                                'hidden': False,
+                                                                                'is_dynamic': False,
+                                                                                'label': 'Source',
+                                                                                'model_class': 'SelectToolParameter',
+                                                                                'multiple': False,
+                                                                                'name': 'adapter_source_list2',
+                                                                                'optional': False,
+                                                                                'options': [   [   'Standard '
+                                                                                                   '(select '
+                                                                                                   'from '
+                                                                                                   'the '
+                                                                                                   'list '
+                                                                                                   'below)',
+                                                                                                   'builtin',
+                                                                                                   True],
+                                                                                               [   'Enter '
+                                                                                                   'custom '
+                                                                                                   'sequence',
+                                                                                                   'user',
+                                                                                                   False],
+                                                                                               [   'File '
+                                                                                                   'from '
+                                                                                                   'history',
+                                                                                                   'file',
+                                                                                                   False]],
+                                                                                'refresh_on_change': True,
+                                                                                'textable': False,
+                                                                                'type': 'select',
+                                                                                'value': 'builtin'},
+                                                              'type': 'conditional'},
+                                                          {   'argument': None,
+                                                              'falsevalue': '',
+                                                              'help': '',
+                                                              'hidden': False,
+                                                              'is_dynamic': False,
+                                                              'label': 'Disallow '
+                                                                       'indels '
+                                                                       'for '
+                                                                       'this '
+                                                                       'adapter',
+                                                              'model_class': 'BooleanToolParameter',
+                                                              'name': 'single_noindels',
+                                                              'optional': False,
+                                                              'refresh_on_change': False,
+                                                              'truevalue': ';noindels',
+                                                              'type': 'boolean',
+                                                              'value': False}],
+                                            'max': '__Infinity__',
+                                            'min': 0,
+                                            'model_class': 'Repeat',
+                                            'name': 'adapters2',
+                                            'title': "3' (End) Adapters",
+                                            'type': 'repeat'},
+                                        {   'default': 0,
+                                            'help': 'Sequence of an adapter '
+                                                    "ligated to the 5' end of "
+                                                    'the second read in each '
+                                                    'pair. The adapter and any '
+                                                    'preceding bases are '
+                                                    'trimmed. Partial matches '
+                                                    "at the 5' end are "
+                                                    "allowed. If a '^' "
+                                                    'character is prepended '
+                                                    "('anchoring'), the "
+                                                    'adapter is only found if '
+                                                    'it is a prefix of the '
+                                                    'read. To search for a '
+                                                    'linked adapter, separate '
+                                                    'the 2 sequences with 3 '
+                                                    'dots '
+                                                    '(ADAPTER1...ADAPTER2), '
+                                                    'see Help below.',
+                                            'inputs': [   {   'cases': [   {   'inputs': [   {   'area': False,
+                                                                                                 'argument': None,
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'adapter '
+                                                                                                          'name '
+                                                                                                          '(Optional)',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'front_adapter_name2',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': ''},
+                                                                                             {   'area': False,
+                                                                                                 'argument': '-G',
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'adapter '
+                                                                                                          'sequence',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'front_adapter2',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': 'AATTGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'user'},
+                                                                           {   'inputs': [   {   'argument': '-G',
+                                                                                                 'display': None,
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': True,
+                                                                                                 'label': 'Choose '
+                                                                                                          "5' "
+                                                                                                          'adapter',
+                                                                                                 'model_class': 'SelectToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'front_adapter2',
+                                                                                                 'optional': False,
+                                                                                                 'options': [   [   'Dummy-Adapter '
+                                                                                                                    '(do '
+                                                                                                                    'not '
+                                                                                                                    'use '
+                                                                                                                    'me)',
+                                                                                                                    'TGTAGGCC',
+                                                                                                                    False]],
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'textable': False,
+                                                                                                 'type': 'select',
+                                                                                                 'value': 'TGTAGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'builtin'},
+                                                                           {   'inputs': [   {   'argument': '-g',
+                                                                                                 'edam': {   'edam_data': [   'data_2044'],
+                                                                                                             'edam_formats': [   'format_1929']},
+                                                                                                 'extensions': [   'fasta'],
+                                                                                                 'help': 'Should '
+                                                                                                         'be '
+                                                                                                         'of '
+                                                                                                         'datatype '
+                                                                                                         '"FASTA"',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Choose '
+                                                                                                          'file '
+                                                                                                          'containing '
+                                                                                                          "5' "
+                                                                                                          'adapters',
+                                                                                                 'model_class': 'DataToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'front_adapter_file2',
+                                                                                                 'optional': False,
+                                                                                                 'options': {   'hda': [   ],
+                                                                                                                'hdca': [   ]},
+                                                                                                 'refresh_on_change': True,
+                                                                                                 'tag': None,
+                                                                                                 'type': 'data',
+                                                                                                 'value': None}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'file'}],
+                                                              'model_class': 'Conditional',
+                                                              'name': 'front_adapter_source2',
+                                                              'test_param': {   'argument': None,
+                                                                                'display': None,
+                                                                                'help': '',
+                                                                                'hidden': False,
+                                                                                'is_dynamic': False,
+                                                                                'label': 'Source',
+                                                                                'model_class': 'SelectToolParameter',
+                                                                                'multiple': False,
+                                                                                'name': 'front_adapter_source_list2',
+                                                                                'optional': False,
+                                                                                'options': [   [   'Standard '
+                                                                                                   '(select '
+                                                                                                   'from '
+                                                                                                   'the '
+                                                                                                   'list '
+                                                                                                   'below)',
+                                                                                                   'builtin',
+                                                                                                   True],
+                                                                                               [   'Enter '
+                                                                                                   'custom '
+                                                                                                   'sequence',
+                                                                                                   'user',
+                                                                                                   False],
+                                                                                               [   'File '
+                                                                                                   'from '
+                                                                                                   'history',
+                                                                                                   'file',
+                                                                                                   False]],
+                                                                                'refresh_on_change': True,
+                                                                                'textable': False,
+                                                                                'type': 'select',
+                                                                                'value': 'builtin'},
+                                                              'type': 'conditional'},
+                                                          {   'argument': None,
+                                                              'falsevalue': '',
+                                                              'help': '',
+                                                              'hidden': False,
+                                                              'is_dynamic': False,
+                                                              'label': 'Disallow '
+                                                                       'indels '
+                                                                       'for '
+                                                                       'this '
+                                                                       'adapter',
+                                                              'model_class': 'BooleanToolParameter',
+                                                              'name': 'single_noindels',
+                                                              'optional': False,
+                                                              'refresh_on_change': False,
+                                                              'truevalue': ';noindels',
+                                                              'type': 'boolean',
+                                                              'value': False}],
+                                            'max': '__Infinity__',
+                                            'min': 0,
+                                            'model_class': 'Repeat',
+                                            'name': 'front_adapters2',
+                                            'title': "5' (Front) Adapters",
+                                            'type': 'repeat'},
+                                        {   'default': 0,
+                                            'help': 'Sequence of an adapter '
+                                                    'that may be ligated to '
+                                                    "the 5' or 3' end of the "
+                                                    'second read in each pair. '
+                                                    'Both types of matches as '
+                                                    "described under under 3' "
+                                                    "und 5' Adapters are "
+                                                    'allowed. If the first '
+                                                    'base of the read is part '
+                                                    'of the match, the '
+                                                    "behavior is as with 5' "
+                                                    'Adapters, otherwise as '
+                                                    "with 3' Adapters. This "
+                                                    'option is mostly for '
+                                                    'rescuing failed library '
+                                                    'preparations - do not use '
+                                                    'if you know which end '
+                                                    'your adapter was ligated '
+                                                    'to!',
+                                            'inputs': [   {   'cases': [   {   'inputs': [   {   'area': False,
+                                                                                                 'argument': None,
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'or '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'name '
+                                                                                                          '(Optional)',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'anywhere_adapter_name2',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': ''},
+                                                                                             {   'area': False,
+                                                                                                 'argument': '-B',
+                                                                                                 'datalist': [   ],
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Enter '
+                                                                                                          'custom '
+                                                                                                          "5' "
+                                                                                                          'or '
+                                                                                                          "3' "
+                                                                                                          'adapter '
+                                                                                                          'sequence',
+                                                                                                 'model_class': 'TextToolParameter',
+                                                                                                 'name': 'anywhere_adapter2',
+                                                                                                 'optional': True,
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'type': 'text',
+                                                                                                 'value': 'AATTGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'user'},
+                                                                           {   'inputs': [   {   'argument': '-B',
+                                                                                                 'display': None,
+                                                                                                 'help': '',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': True,
+                                                                                                 'label': 'Choose '
+                                                                                                          "5' "
+                                                                                                          'or '
+                                                                                                          "3' "
+                                                                                                          'adapter',
+                                                                                                 'model_class': 'SelectToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'anywhere_adapter2',
+                                                                                                 'optional': False,
+                                                                                                 'options': [   [   'Dummy-Adapter '
+                                                                                                                    '(do '
+                                                                                                                    'not '
+                                                                                                                    'use '
+                                                                                                                    'me)',
+                                                                                                                    'TGTAGGCC',
+                                                                                                                    False]],
+                                                                                                 'refresh_on_change': False,
+                                                                                                 'textable': False,
+                                                                                                 'type': 'select',
+                                                                                                 'value': 'TGTAGGCC'}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'builtin'},
+                                                                           {   'inputs': [   {   'argument': '-b',
+                                                                                                 'edam': {   'edam_data': [   'data_2044'],
+                                                                                                             'edam_formats': [   'format_1929']},
+                                                                                                 'extensions': [   'fasta'],
+                                                                                                 'help': 'Should '
+                                                                                                         'be '
+                                                                                                         'of '
+                                                                                                         'datatype '
+                                                                                                         '"FASTA"',
+                                                                                                 'hidden': False,
+                                                                                                 'is_dynamic': False,
+                                                                                                 'label': 'Choose '
+                                                                                                          'file '
+                                                                                                          'containing '
+                                                                                                          "3' "
+                                                                                                          'or '
+                                                                                                          "5' "
+                                                                                                          'adapters',
+                                                                                                 'model_class': 'DataToolParameter',
+                                                                                                 'multiple': False,
+                                                                                                 'name': 'anywhere_adapter_file2',
+                                                                                                 'optional': False,
+                                                                                                 'options': {   'hda': [   ],
+                                                                                                                'hdca': [   ]},
+                                                                                                 'refresh_on_change': True,
+                                                                                                 'tag': None,
+                                                                                                 'type': 'data',
+                                                                                                 'value': None}],
+                                                                               'model_class': 'ConditionalWhen',
+                                                                               'value': 'file'}],
+                                                              'model_class': 'Conditional',
+                                                              'name': 'anywhere_adapter_source2',
+                                                              'test_param': {   'argument': None,
+                                                                                'display': None,
+                                                                                'help': '',
+                                                                                'hidden': False,
+                                                                                'is_dynamic': False,
+                                                                                'label': 'Source',
+                                                                                'model_class': 'SelectToolParameter',
+                                                                                'multiple': False,
+                                                                                'name': 'anywhere_adapter_source_list2',
+                                                                                'optional': False,
+                                                                                'options': [   [   'Standard '
+                                                                                                   '(select '
+                                                                                                   'from '
+                                                                                                   'the '
+                                                                                                   'list '
+                                                                                                   'below)',
+                                                                                                   'builtin',
+                                                                                                   True],
+                                                                                               [   'Enter '
+                                                                                                   'custom '
+                                                                                                   'sequence',
+                                                                                                   'user',
+                                                                                                   False],
+                                                                                               [   'File '
+                                                                                                   'from '
+                                                                                                   'history',
+                                                                                                   'file',
+                                                                                                   False]],
+                                                                                'refresh_on_change': True,
+                                                                                'textable': False,
+                                                                                'type': 'select',
+                                                                                'value': 'builtin'},
+                                                              'type': 'conditional'},
+                                                          {   'argument': None,
+                                                              'falsevalue': '',
+                                                              'help': '',
+                                                              'hidden': False,
+                                                              'is_dynamic': False,
+                                                              'label': 'Disallow '
+                                                                       'indels '
+                                                                       'for '
+                                                                       'this '
+                                                                       'adapter',
+                                                              'model_class': 'BooleanToolParameter',
+                                                              'name': 'single_noindels',
+                                                              'optional': False,
+                                                              'refresh_on_change': False,
+                                                              'truevalue': ';noindels',
+                                                              'type': 'boolean',
+                                                              'value': False}],
+                                            'max': '__Infinity__',
+                                            'min': 0,
+                                            'model_class': 'Repeat',
+                                            'name': 'anywhere_adapters2',
+                                            'title': "5' or 3' (Anywhere) "
+                                                     'Adapters',
+                                            'type': 'repeat'},
+                                        {   'area': False,
+                                            'argument': '-U',
+                                            'datalist': [],
+                                            'help': 'Remove bases from the '
+                                                    'beginning or end of each '
+                                                    'read before trimming '
+                                                    'adapters. If positive, '
+                                                    'the bases are removed '
+                                                    'from the beginning of '
+                                                    'each read. If negative, '
+                                                    'the bases are removed '
+                                                    'from the end of each '
+                                                    'read.',
+                                            'hidden': False,
+                                            'is_dynamic': False,
+                                            'label': 'Cut bases from the '
+                                                     'second read in each '
+                                                     'pair.',
+                                            'max': None,
+                                            'min': None,
+                                            'model_class': 'IntegerToolParameter',
+                                            'name': 'cut2',
+                                            'optional': True,
+                                            'refresh_on_change': False,
+                                            'type': 'integer',
+                                            'value': '0'},
+                                        {   'area': False,
+                                            'argument': None,
+                                            'datalist': [],
+                                            'help': 'Trim low-quality bases '
+                                                    "from 5' and/or 3' ends of "
+                                                    'each read before adapter '
+                                                    'removal. If one value is '
+                                                    "given, only the 3' end is "
+                                                    'trimmed. If two '
+                                                    'comma-separated cutoffs '
+                                                    "are given, the 5' end is "
+                                                    'trimmed with the first '
+                                                    "cutoff, the 3' end with "
+                                                    'the second. Leave blank '
+                                                    'to use the same value as '
+                                                    'for Read 1',
+                                            'hidden': False,
+                                            'is_dynamic': False,
+                                            'label': 'Optional separate '
+                                                     'quality cutoff for Read '
+                                                     '2',
+                                            'model_class': 'TextToolParameter',
+                                            'name': 'quality_cutoff2',
+                                            'optional': True,
+                                            'refresh_on_change': False,
+                                            'type': 'text',
+                                            'value': None}],
+                          'model_class': 'Section',
+                          'name': 'r2',
+                          'title': 'Read 2 Options',
+                          'type': 'section'}],
+        'model_class': 'ConditionalWhen',
+        'value': 'paired'}]

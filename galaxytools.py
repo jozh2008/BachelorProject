@@ -4,11 +4,15 @@ from pprint import pprint, PrettyPrinter
 import re
 import time
 import csv
+import json
+import copy
+from itertools import product
 # from datetime import datetime
 from typing import (
     List,
     Dict,
     Optional,
+    Any
 )
 
 
@@ -19,6 +23,7 @@ class Tool:
         self.tool_id = ""
         self.input_files = []
         self.json_input = []
+        self.my_dict = {}
 
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -108,6 +113,7 @@ class Tool:
 
     def run_tool_with_input_files(self, tool_name: str, datasets_name: List[str]):
         _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
+        self.my_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id)
         input_data_ids = self.get_input_data_ids(datasets_name)
         self.input_files = self.get_input_files(input_data_ids)
 
@@ -144,7 +150,7 @@ class Tool:
         return valid_inputs
 
     def run_tool(self, inputs: Dict):
-        # job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs, input_format="21.01")
+        #job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs, input_format="21.01")
         job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs)
         job_id = job["jobs"][0]["id"]
         self.wait_for_job(job_id)
@@ -247,24 +253,46 @@ class Tool:
         values = extract(obj, arr, key)
         return values
     
-    def json_extract_v2(self, obj, key):
-        """Recursively fetch values from nested JSON."""
-        arr = []
+    def extract_values_from_nested_json(self, json_object, target_key):
+        """
+        Recursively fetch values from nested JSON based on a specified key.
 
-        def extract(obj, arr: list, key):
-            """Recursively search for values of key in JSON tree."""
+        Args:
+            json_object (dict or list): The JSON object to search.
+            target_key (str): The key to search for in the JSON object.
+
+        Returns:
+            list: A list of values corresponding to the specified key in the JSON object.
+        """
+        result_values = []
+
+        def recursive_search(obj, result_values, key):
+            """
+            Recursively searches for values of key in JSON tree.
+
+            Args:
+                obj (dict or list): The current JSON object or list.
+                result_values (list): The list to store found values.
+                key (str): The target key to search for.
+
+            Returns:
+                list: A list of values corresponding to the specified key.
+            """
             if isinstance(obj, dict):
                 for _, v in obj.items():
                     if isinstance(v, (dict, list)):
-                        extract(v, arr, key)
+                        recursive_search(v, result_values, key)
                     if v == key and obj.get("model_class") == 'SelectToolParameter':
-                        arr.append(obj.get("options", {}))
+                        options = obj.get("options", {})
+                        result_values.append(options)
             elif isinstance(obj, list):
                 for item in obj:
-                    extract(item, arr, key)
-            return arr
-        values = extract(obj, arr, key)
-        return values
+                    recursive_search(item, result_values, key)
+            return result_values
+
+        found_values = recursive_search(json_object, result_values, target_key)
+        return found_values
+
     
     def extract_keys(self, data, keys=[]):
         if isinstance(data, dict):
@@ -311,14 +339,33 @@ class Tool:
         _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
         tools = self.gi.tools.build(tool_id=self.tool_id, history_id=self.history_id)
         input_states = (tools["state_inputs"])
-        pprint(input_states)
-        self.write_to_file(input_states, "input_states_multiqc.txt")
+        self.write_to_file(input_states, "input_states_cutapdt.txt")
         lst = self.extract_keys(input_states)
-        lst2 = self.extract_keys_with_path(input_states)
+        #lst2 = self.extract_keys_with_path(input_states)
         inputs_opitons = self.get_tool_input_options(tool_name)
+        #self.write_to_file(inputs_opitons, "output_cutapdt.txt")
         dictonary = (self.process_data(lst, inputs_options=inputs_opitons))
-        dict2  = self.genarate_input_file(lst2, dictonary)
-        return(self.build_tool(dict2))
+        pprint(dictonary)
+        all_combinations = [dict(zip(dictonary.keys(), values)) for values in product(*dictonary.values())]
+        
+        # Print the first 5 combinations as an example
+        for i, combination in enumerate(all_combinations[:5], 0):
+            print(f"Combination {i}: {combination}")
+                #dict2  = self.genarate_input_file(lst2, dictonary)
+                #return self.build_tool(dict2)
+            #self.update_keys(input_states, combination)
+        
+
+    def update_keys(self, original, updated):
+        sol_dict = {}
+        for key, value in updated.items():
+            sol_dict = (self.update_values(original,key=key, new_value=value))
+        return sol_dict
+    
+    def build_input_states(self, tool_id: str, history_id: str, inputs: Dict[str, Any] | None = None):
+        tools = self.gi.tools.build(tool_id=tool_id, inputs=inputs, history_id=history_id)
+        input_states = (tools["state_inputs"])
+        return input_states
 
 
     def build_tool(self, dictionary):
@@ -349,12 +396,12 @@ class Tool:
         result_dict = {}
         for key in keys:
             # Extract values based on the key
-            extracted_values = self.json_extract_v2(inputs_options, key)
+            extracted_values = self.extract_values_from_nested_json(inputs_options, key)
+            #pprint(extracted_values)
             # Check if the extracted values are not empty
             if extracted_values:
                 flattened_values = self.get_flattend_list(extracted_values)
                 databases = self.get_databases(flattened_values)
-                #pprint(databases)
 
                 # Store databases in the result_dict
                 result_dict[key] = databases
@@ -371,7 +418,39 @@ class Tool:
             
         return (input_dict)
 
+    def update_values(self, dic, key, new_value):
+            
+        dictionary = copy.deepcopy(dic)
 
+        def recursion( dictionary, key, new_value):
+            
+            if isinstance(dictionary, dict):
+                    for k, v in dictionary.items():
+                        if isinstance(v, (dict, list)):
+                            recursion(v, key, new_value)
+                        if k == key:
+                            dictionary[k] = new_value           
+            elif isinstance(dictionary, list):
+                for item in dictionary:
+                    recursion(item, key, new_value)
+            return dictionary
+        
+        return recursion(dictionary,key, new_value)
+
+
+    """                   
+    def update_values(self, dictionary, key, new_value):
+                dic = dic.copy()
+                if isinstance(dictionary, dict):
+                        for k, v in dictionary.items():
+                            if isinstance(v, (dict, list)):
+                                self.update_values(v, key, new_value)
+                            if k == key:
+                                dictionary[k] = new_value           
+                elif isinstance(dictionary, list):
+                    for item in dictionary:
+                        self.update_values(item, key, new_value)
+    """
 
 class FastQCTool(Tool):
 
@@ -412,6 +491,10 @@ class FastQCTool(Tool):
 
 class MultiQCTool(Tool):
     SOFTWARE = "fastqc"
+    KEY_WORD = "software"
+    INPUT_WORDS = ["type"]
+    VALUES = "values"
+
 
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
@@ -427,6 +510,90 @@ class MultiQCTool(Tool):
         }
         return inputs
     
+    def get_inputs3(self, input_files: List[str]):
+        super().update_values(self.my_dict,"values", input_files)
+        return self.my_dict
+    """
+    def get_inputs4(self, input_files: List[str], key_word):
+        input_list = []
+        # Extract keys with path from my_dict
+        keys_with_path = self.extract_keys_with_path(self.my_dict)
+
+        # Create a dictionary to store results
+        input_dict = {}
+        
+        # Filter keys based on the keyword
+        for i in keys_with_path:
+            if key_word in i.split("|"):
+                input_dict[i] = self.SOFTWARE
+        
+        orginal_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
+        c = super().update_values(orginal_dict, self.VALUES, input_files)
+        all_combinations= (self.get_all_input_combinations())
+        for combination in all_combinations:
+            a = self.update_keys(c, combination)
+            input_list.append(a)
+
+
+        return (input_list)
+    """
+    
+    def get_inputs4(self, input_files: List[str], key_word):
+        """
+        Generate input combinations based on a keyword and tool options.
+
+        Args:
+            input_files (List[str]): List of input files.
+            key_word (str): Keyword to filter input combinations.
+
+        Returns:
+            List[dict]: List of dictionaries representing input combinations.
+        """
+        # Extract keys with path from my_dict
+        keys_with_path = self.extract_keys_with_path(self.my_dict)
+
+        # Create a dictionary to store filtered keys based on the keyword
+        input_dict = {i: self.SOFTWARE for i in keys_with_path if key_word in i.split("|")}
+
+        # Build the original dictionary using the filtered keys
+        original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
+
+        # Update the original dictionary with input_files using the update_values method
+        updated_dict = super().update_values(original_dict, self.VALUES, input_files)
+
+        # Get all input combinations
+        all_combinations = self.get_all_input_combinations()
+
+        # Generate input_list with updated dictionaries for each combination
+        input_list = [self.update_keys(updated_dict.copy(), combination) for combination in all_combinations]
+
+        return input_list
+    
+    def get_all_input_combinations(self):
+        """
+        Retrieves input combinations based on a keyword and tool options.
+
+        Args:
+            input_files (List[str]): List of input files.
+            key_word (str): Keyword to filter input combinations.
+
+        Returns:
+            List[dict]: List of dictionaries representing input combinations.
+        """
+
+
+        # Get tool input options and process data
+        inputs_options = self.get_tool_input_options(self.tool_name)
+        input_options_dictionary = self.find_values_in_nested_json(inputs_options, self.SOFTWARE)
+        dictionary = self.process_data(self.INPUT_WORDS, inputs_options=input_options_dictionary)
+
+        # Generate all combinations of input values
+        all_combinations = [dict(zip(dictionary.keys(), values)) for values in product(*dictionary.values())]
+        #pprint(all_combinations)
+        return all_combinations
+        
+        
+
 
     def get_dataset_names(self):
         return "FastQC on data 1: RawData", "FastQC on data 2: RawData"
@@ -436,26 +603,83 @@ class MultiQCTool(Tool):
         inputs = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs)
     
-    def show_tool_input(self):
-        a = super().show_tool_input(self.tool_name)
-        inputs_options = self.get_tool_input_options(self.tool_name)
-        lst2 =[]
-        lst3 = []
+
+    """
+    def show_tool_input(self, tool_name):
+        a = super().show_tool_input(tool_name)
+        my_dict = {}
         for i in a:
-            b = self.extract_keys(data=i)
-            lst2.append(b)
-        c = self.remove_duplicate(b)
-        extracted_values = []
-        for key in c:
-            # Extract values based on the key
-            extracted_values.append((self.json_extract_v2(inputs_options, key),key))
-            # Check if the extracted values are not empty
-        modifiyed_values = self.remove_duplicate(extracted_values)
-        pprint(modifiyed_values)
-        for i in modifiyed_values:
-            if i[0]:
-                lst3.append(i)
-        print(lst3)
+            dict_str = json.dumps(i)
+            if self.SOFTWARE in dict_str:
+                my_dict = i
+        self.my_dict = my_dict
+        ab = self.json_extract_v3(my_dict, self.SOFTWARE)
+        pprint(ab[0])
+        ad = (self.json_extract_v4(self.json_input, self.SOFTWARE))
+        cc = (self.json_extract_v2(ad,"type"))
+        pprint(self.get_flattend_list(cc))
+    """
+
+    def json_extract_v3(self, obj, key):
+        """Recursively fetch values from nested JSON."""
+        arr = []
+
+        def extract(obj, arr: list, key):
+            """Recursively search for values of key in JSON tree."""
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    if isinstance(v, (dict, list)):
+                        extract(v, arr, key)
+                    if v == key:
+                        arr.append(k)
+            elif isinstance(obj, list):
+                for item in obj:
+                    extract(item, arr, key)
+            return arr
+        values = extract(obj, arr, key)
+        return values
+    
+    def find_values_in_nested_json(self, json_object, target_key):
+        """
+        Recursively searches for values of a specified key in a nested JSON object.
+
+        Args:
+            json_object (dict or list): The JSON object to search.
+            target_key (str): The key to search for in the JSON object.
+
+        Returns:
+            list: A list of values corresponding to the specified key in the JSON object.
+        """
+        result_values = []
+
+        def recursive_search(obj, result_values, key):
+            """
+            Recursively searches for values of key in JSON tree.
+
+            Args:
+                obj (dict or list): The current JSON object or list.
+                result_values (list): The list to store found values.
+                key (str): The target key to search for.
+
+            Returns:
+                list: A list of values corresponding to the specified key.
+            """
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    if isinstance(v, (dict, list)):
+                        recursive_search(v, result_values, key)
+                    if v == key:
+                        result_values.append(obj)
+            elif isinstance(obj, list):
+                for item in obj:
+                    recursive_search(item, result_values, key)
+            return result_values
+
+        found_values = recursive_search(json_object, result_values, target_key)
+        return found_values
+
+
+
 
 class CutadaptTool(Tool):
     LIBRARY_TYPE = 'paired'

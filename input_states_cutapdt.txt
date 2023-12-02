@@ -3,7 +3,7 @@
     'flat': False,
     'results': [   {   '__index__': 0,
                        'software_cond': {   '__current_case__': 0,
-                                            'input': {   'values': [   {   'id': '4838ba20a6d86765f5a55ba392ed1299',
+                                            'input': {   'values': [   {   'id': '4838ba20a6d8676564775436e6f2b738',
                                                                            'src': 'hda'}]},
                                             'software': 'bamtools'}}],
     'saveLog': False,

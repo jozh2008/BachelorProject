@@ -28,17 +28,17 @@ class GalaxyWorkflow:
         self.tools = [
             #FastQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
             #MultiQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            CutadaptTool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            #CutadaptTool(server=server, api_key=api_key, history_id=self.gi.history_id),
             #SortMeRNATool(server=server, api_key=api_key, history_id=self.gi.history_id),
             #FASTQinterlacerTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            #MetaPhlAnTool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            MetaPhlAnTool(server=server, api_key=api_key, history_id=self.gi.history_id),
             #HUMAnNTool(server=server, api_key=api_key, history_id=self.gi.history_id)
         ]
 
     def run_tools(self):
         for tool in self.tools:
-            #tool.show_tool_input(tool.tool_name)
-            tool.run_tool_with_input_files(tool.tool_name, True)
+            tool.show_tool_input(tool.tool_name)
+            tool.run_tool_with_input_files(tool.tool_name)
             
             
 

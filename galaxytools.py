@@ -24,6 +24,7 @@ class Tool:
         self.input_files = []
         self.json_input = []
         self.my_dict = {}
+        self.my_dict2 = {}
 
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -155,6 +156,7 @@ class Tool:
             job_id = job["jobs"][0]["id"]
             self.wait_for_job(job_id)
         else:
+            self.write_to_file(inputs, "inputs_cutadapt.txt")
             job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs, input_format="21.01")
             job_id = job["jobs"][0]["id"]
         print(f"Tool '{self.tool_id}' has finished processing with job ID: {job_id}")
@@ -439,7 +441,7 @@ class Tool:
         
         return recursion(dictionary,key, new_value)
     """
-    def update_values(self, dic, key, new_values):
+    def update_values(self, dic, key, new_values, paired:bool = False):
         """
         Recursively updates values in a nested dictionary based on a specified key.
 
@@ -460,8 +462,9 @@ class Tool:
                     if isinstance(v_inner, (dict, list)):
                         recursion(v_inner, k, new_val)
                     if k_inner == k:
-                        if isinstance(new_val, (list, tuple)):
-                            d[k_inner] = new_val.pop(0) if new_val else None
+                        if isinstance(new_val, (list, tuple)) and paired:
+                            print(3234534535345345)
+                            d[k_inner] = [new_val.pop(0)] if new_val else None
                         else:
                             d[k_inner] = new_val
             elif isinstance(d, list):
@@ -581,6 +584,7 @@ class MultiQCTool(Tool):
         Returns:
             List[dict]: List of dictionaries representing input combinations.
         """
+        inputs = input_files.copy()
         # Extract keys with path from my_dict
         keys_with_path = self.extract_keys_with_path(self.my_dict)
 
@@ -590,10 +594,12 @@ class MultiQCTool(Tool):
         # Build the original dictionary using the filtered keys
         original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
 
-        # pprint(original_dict)
+        pprint(original_dict)
+        pprint(inputs)
 
         # Update the original dictionary with input_files using the update_values method
-        updated_dict = super().update_values(original_dict, self.VALUES, input_files)
+        updated_dict = super().update_values(original_dict, self.VALUES, inputs)
+        pprint(updated_dict)
 
         # Get all input combinations
         all_combinations = self.get_all_input_combinations()
@@ -630,6 +636,7 @@ class MultiQCTool(Tool):
         if combination_test:
             inputs = self.get_inputs_combination_test(self.input_files,self.KEY_WORD)
             for inp in inputs:
+                pprint(inp)
                 super().run_tool(inputs=inp, combination_test=combination_test)
         else:
             inputs = self.get_inputs(self.input_files)
@@ -710,8 +717,9 @@ class CutadaptTool(Tool):
 
         # Build the original dictionary using the filtered keys
         original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
+        self.my_dict2 = original_dict
         # Update the original dictionary with input_files using the update_values method
-        updated_dict = super().update_values(original_dict, self.VALUES, inputs)
+        updated_dict = super().update_values(original_dict, self.VALUES, inputs, paired=True)
         # Get all input combinations
         all_combinations = self.get_all_input_combinations()
 

@@ -7,6 +7,8 @@ import csv
 import json
 import copy
 from itertools import product, count
+from html_parser import HTMLParser
+from xml_parser import XMLParser
 # from datetime import datetime
 from typing import (
     List,
@@ -185,8 +187,33 @@ class Tool:
         _, tool_id = self.get_newest_tool_version_and_id(tool_name)
         # Show the tool with detailed input and output options
         tool_details = self.gi.tools.show_tool(tool_id, io_details=True)
+        #t = self.gi.tools.show_tool(tool_id, io_details=True, link_details=True)
+        #self.write_to_file(t, "humann_output_all.txt")
         # Extract detailed input options
         input_options = tool_details.get('inputs', {})
+        return input_options
+    
+    def get_tool_input_options_all(self, tool_name):
+        """
+        Get detailed input options for a specified tool.
+
+        Parameters:
+        - tool_name: The name of the tool.
+
+        Returns:
+        - input_options: Detailed input options for the tool.
+        """
+        # Get the newest version and ID of the tool
+        _, tool_id = self.get_newest_tool_version_and_id(tool_name=tool_name)
+        # Show the tool with detailed input and output options
+        #tool_details = self.gi.tools.show_tool(tool_id, io_details=True)
+        
+        tool_details = self.gi.tools.show_tool(tool_id, io_details=True, link_details=True)
+        #self.write_to_file(t, "humann_output_all.txt")
+        # Extract detailed input options
+        #pprint(tool_details)
+        #pprint(self.tool_id)
+        input_options = tool_details.get('tool_shed_repository', {})
         return input_options
 
     def write_to_file(self, data, name):
@@ -369,17 +396,41 @@ class Tool:
         inputs_opitons = self.get_tool_input_options(tool_name)
         #self.write_to_file(inputs_opitons, "output_humann.txt")
         dictonary, lst1 = (self.process_data(lst, inputs_options=inputs_opitons))
-        pprint(dictonary)
+        #pprint(dictonary)
+        #pprint(self.get_tool_input_options_all(tool_name))
         all_combinations = [dict(zip(dictonary.keys(), values)) for values in product(*dictonary.values())]
         
         # Print the first 5 combinations as an example
+        """"
         for i, combination in enumerate(all_combinations[:5], 0):
             print(f"Combination {i}: {combination}")
                 #dict2  = self.genarate_input_file(lst2, dictonary)
                 #return self.build_tool(dict2)
             #self.update_keys(input_states, combination)
         pprint(self.json_input)
-        
+        """
+        #pprint(self.get_link(tool_name))
+        url = self.get_link(tool_name) 
+        #pprint(self.parser(url))
+        #print(HTMLParser.find_development_repository_href(self.parser(url)))
+        url_parser = HTMLParser(self.parser(url))
+        l = (url_parser.find_development_repository_href())
+        url_parser = HTMLParser(url_parser.find_development_repository_href()) 
+        data = url_parser.get_github_resource()
+        xml = (self.find_values_in_nested_json(data, ".xml", is_object =False))
+        lst = []
+        for i in xml:
+            url_xml = (f"{l}/{i}")
+            print(url_xml)
+            url_xmlparser= XMLParser(url=url_xml)
+            data_xml =self.find_values_in_nested_json(url_xmlparser.prepare_fetch_xml_data(), "rawLines", is_object=False)
+            a = (self.flatten(data_xml))
+            if a:
+                #pprint(a)
+                url_xmlparser.fetch_xml_data(a)
+                url_xmlparser.find_protein_database_options("protein_database")
+                
+
         
 
     def update_keys(self, original, updated):
@@ -398,12 +449,31 @@ class Tool:
             # Handle the specific ConnectionError with HTTP status code 500 and the specified error message
                 print("Caught the specific ConnectionError:")
                 print(f"Exception: {str(e)}")
-        else:
-            # Handle other ConnectionError scenarios
-            print("Caught a ConnectionError, but not the specific case:")
-            print(f"Exception: {str(e)}")
+            else:
+                # Handle other ConnectionError scenarios
+                print("Caught a ConnectionError, but not the specific case:")
+                print(f"Exception: {str(e)}")
             
-        
+    def get_link(self, tool_name):
+        dictionary = self.get_tool_input_options_all(tool_name)
+        print(dictionary)
+        url_1 =  "https://" + dictionary["tool_shed"]
+        url = url_1+ "/view/" + dictionary["owner"] + "/" + dictionary["name"] + "/" +dictionary["changeset_revision"]
+        #pprint(url)
+        return url, url_1
+    
+    def parser(self, url):
+        base_url, url_1 = url
+        url_parser = HTMLParser(base_url)
+        iframe_src = url_parser.get_iframe_src()
+
+        if iframe_src:
+            iframe_url = f"{url_1}{iframe_src}"
+            print(f"The source URL of the iframe is: {iframe_url}")
+            return iframe_url
+        else:
+            print("No iframe found in the HTML content.")
+            return None
         
 
 
@@ -483,7 +553,7 @@ class Tool:
 
         return dictionary
     
-    def find_values_in_nested_json(self, json_object, target_key):
+    def find_values_in_nested_json(self, json_object, target_key, is_object:str=True):
         """
         Recursively searches for values of a specified key in a nested JSON object.
 
@@ -512,8 +582,16 @@ class Tool:
                 for k, v in obj.items():
                     if isinstance(v, (dict, list)):
                         recursive_search(v, result_values, key)
-                    if v == key:
-                        result_values.append(obj)
+                    if (is_object is True):
+                        if v == key:
+                            result_values.append(obj)
+                    else:
+                        if isinstance(v, str):
+                            if key in v and k == "name":
+                                result_values.append(v)
+                        else:    
+                            if k == key:
+                                result_values.append(v)
             elif isinstance(obj, list):
                 for item in obj:
                     recursive_search(item, result_values, key)

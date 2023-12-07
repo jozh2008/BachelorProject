@@ -3,6 +3,7 @@
 # from workflow import *
 from galaxytools import *
 import multiprocessing
+
 # which server should be conncted
 server = 'https://usegalaxy.eu/'
 # api kex of account
@@ -26,19 +27,19 @@ class GalaxyWorkflow:
     
     def define_tools(self):
         self.tools = [
-            #FastQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            #MultiQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            #CutadaptTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            #SortMeRNATool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            #FASTQinterlacerTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            #MetaPhlAnTool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            FastQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            MultiQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            CutadaptTool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            SortMeRNATool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            FASTQinterlacerTool(server=server, api_key=api_key, history_id=self.gi.history_id),
+            MetaPhlAnTool(server=server, api_key=api_key, history_id=self.gi.history_id),
             HUMAnNTool(server=server, api_key=api_key, history_id=self.gi.history_id)
         ]
 
     def run_tools(self):
         for tool in self.tools:
-            #tool.show_tool_input(tool.tool_name)
-            tool.run_tool_with_input_files(tool.tool_name)
+            tool.show_tool_input(tool.tool_name)
+            #tool.run_tool_with_input_files(tool.tool_name)
             
             
 
@@ -48,6 +49,8 @@ class GalaxyWorkflow:
             re.get_dataset_names(dataset)
             re.run_tool_with_input_files("Renormalize")
 
+   
+
 
 
 def main():
@@ -55,7 +58,7 @@ def main():
     #file_forward = "Upload_files/T1A_forward.fastqsanger"
     file_reverse = "Upload_files/newfile_T1A_reverse"
     #file_reverse = "Upload_files/T1A_reverse.fastqsanger"
-    history_name = "Metatranscriptomics Coding 7"
+    history_name = "Metatranscriptomics Coding 8"
 
     workflow = GalaxyWorkflow(server, api_key, history_name)
     workflow.create_history()

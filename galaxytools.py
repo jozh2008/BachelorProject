@@ -3,13 +3,12 @@ from bioblend import ConnectionError
 from pprint import pprint, PrettyPrinter
 import re
 import time
-import csv
 import json
 import copy
-from itertools import product, count
+from itertools import product
 from html_parser import HTMLParser
 from xml_parser import XMLParser
-# from datetime import datetime
+from datetime import datetime
 from typing import (
     List,
     Dict,
@@ -27,6 +26,10 @@ class Tool:
         self.json_input = []
         self.my_dict = {}
         self.my_dict2 = {}
+        self.file_path = "tool_data.json"
+        self.datatabels_name = []
+        self.url_name = ""
+        self.job_id = []
 
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -98,7 +101,7 @@ class Tool:
     # wait until job is done, cause tools are dependent of each other
     def wait_for_job(self, job_id: str):
         try:
-            self.gi.jobs.wait_for_job(job_id=job_id,interval=30)
+            self.gi.jobs.wait_for_job(job_id=job_id, interval=30)
         except ConnectionError:
             self.connect_to_galaxy_with_retry()
 
@@ -115,6 +118,7 @@ class Tool:
         pass
 
     def run_tool_with_input_files(self, tool_name: str, datasets_name: List[str]):
+        self.datatabels_name = self.get_names_from_data(self.load_data_from_file(self.file_path))
         _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
         self.my_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id)
         input_data_ids = self.get_input_data_ids(datasets_name)
@@ -152,18 +156,21 @@ class Tool:
                 valid_inputs.append({'src': 'hda', 'id': data_id})
         return valid_inputs
 
-    def run_tool(self, inputs: Dict, combination_test:bool = False):
-        if not combination_test:
-            job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs)
-            job_id = job["jobs"][0]["id"]
-            self.wait_for_job(job_id)
+    def run_tool(self, inputs: Dict, combination_test: bool = False):
+        job = self.gi.tools.run_tool(
+            history_id=self.history_id,
+            tool_id=self.tool_id,
+            tool_inputs=inputs,
+            input_format="21.01"
+        )
+
+        job_id = job["jobs"][0]["id"]
+
+        if combination_test:
+            self.job_id.append([job_id, inputs])
         else:
-            job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=self.tool_id, tool_inputs=inputs, input_format="21.01")
-            job_id = job["jobs"][0]["id"]
-        print(f"Tool '{self.tool_id}' has finished processing with job ID: {job_id}")
-
-
-        
+            self.wait_for_job(job_id)
+            print(f"Tool '{self.tool_id}' has finished processing with job ID: {job_id}")
 
     def update_dataset_names(self, update_names, old_names):
         """
@@ -187,33 +194,30 @@ class Tool:
         _, tool_id = self.get_newest_tool_version_and_id(tool_name)
         # Show the tool with detailed input and output options
         tool_details = self.gi.tools.show_tool(tool_id, io_details=True)
-        #t = self.gi.tools.show_tool(tool_id, io_details=True, link_details=True)
-        #self.write_to_file(t, "humann_output_all.txt")
         # Extract detailed input options
         input_options = tool_details.get('inputs', {})
         return input_options
-    
+
     def get_tool_input_options_all(self, tool_name):
         """
-        Get detailed input options for a specified tool.
+        Retrieve input options for a given tool.
 
-        Parameters:
-        - tool_name: The name of the tool.
+        Args:
+            tool_name (str): The name of the tool.
 
         Returns:
-        - input_options: Detailed input options for the tool.
+            dict: A dictionary containing input options for the specified tool.
         """
-        # Get the newest version and ID of the tool
+        # Get the newest tool version and its ID
         _, tool_id = self.get_newest_tool_version_and_id(tool_name=tool_name)
-        # Show the tool with detailed input and output options
-        #tool_details = self.gi.tools.show_tool(tool_id, io_details=True)
-        
+
+        # Retrieve tool details using the Galaxy API
         tool_details = self.gi.tools.show_tool(tool_id, io_details=True, link_details=True)
-        #self.write_to_file(t, "humann_output_all.txt")
-        # Extract detailed input options
-        #pprint(tool_details)
-        #pprint(self.tool_id)
+
+        # Extract input options from the tool details
         input_options = tool_details.get('tool_shed_repository', {})
+
+        # Return the input options as a dictionary
         return input_options
 
     def write_to_file(self, data, name):
@@ -221,37 +225,6 @@ class Tool:
             pp = PrettyPrinter(indent=4, stream=file)
             pp.pprint(data)
         file.close()
-
-    def is_row_present(self, file_path, new_row):
-        #pprint(new_row)
-        #pprint(row)
-        # Check if the new_row is already present in the file
-        with open(file_path, "r", newline="", encoding="utf-8") as tsv_file:
-            reader = csv.reader(tsv_file, delimiter='\t')
-            for row in reader:
-                #if row[1:] == new_row[0][1:]:
-                if row == new_row:
-                    return True
-
-        return False
-
-    def add_row_if_not_present(self, file_path, new_row):
-        # Check if the row is not already present
-        if not self.is_row_present(file_path, new_row):
-            # Append the new_row to the TSV file
-            """
-            with open(file_path, "a", newline="", encoding="utf-8") as tsv_file:
-                writer = csv.writer(tsv_file, delimiter='\t')
-                for row in new_row:
-                    writer.writerow(row)
-            """
-            with open(file_path, 'a') as file:
-                # Convert each combination to a JSON string and write to the file
-                data = (new_row)
-                pp = PrettyPrinter(indent=4, stream=file)
-                pp.pprint(data)
-            file.close()
-                
 
     def get_databases(self, inputs):
         """
@@ -280,25 +253,6 @@ class Tool:
         flattened_list = [element for sublist in original_list[0] for element in sublist]
         return flattened_list
 
-    def json_extract(self, obj, key):
-        """Recursively fetch values from nested JSON."""
-        arr = []
-
-        def extract(obj, arr: list, key):
-            """Recursively search for values of key in JSON tree."""
-            if isinstance(obj, dict):
-                for _, v in obj.items():
-                    if isinstance(v, (dict, list)):
-                        extract(v, arr, key)
-                    if v == key:
-                        arr.append(obj.get("options", {}))
-            elif isinstance(obj, list):
-                for item in obj:
-                    extract(item, arr, key)
-            return arr
-        values = extract(obj, arr, key)
-        return values
-    
     def extract_values_from_nested_json(self, json_object, target_key):
         """
         Recursively fetch values from nested JSON based on a specified key.
@@ -332,9 +286,7 @@ class Tool:
                     if v == key and obj.get("model_class") == 'SelectToolParameter':
                         options = obj.get("options", {})
                         result_values.append(options)
-                        #pprint(obj.get('multiple'))
-                        if obj.get('multiple') == True:
-                            #pprint("sjdflksjdflksdjflksdfjsdlk")
+                        if obj.get('multiple') is True:
                             result_muliple.append(key)
             elif isinstance(obj, list):
                 for item in obj:
@@ -344,7 +296,6 @@ class Tool:
         found_values = recursive_search(json_object, result_values, target_key)
         return found_values, result_muliple
 
-    
     def extract_keys(self, data, keys=[]):
         if isinstance(data, dict):
             for key, value in data.items():
@@ -354,7 +305,7 @@ class Tool:
             for item in data:
                 self.extract_keys(item, keys)
         return keys
-    
+
     def extract_keys_with_path(self, data, path=[], keys=[]):
         if isinstance(data, dict):
             for key, value in data.items():
@@ -367,139 +318,102 @@ class Tool:
                 self.extract_keys_with_path(item, current_path, keys)
         return keys
 
-    def get_datatables(self, tool_name, database_name):
-        # Step 1: Get tool input options
-        tool_tables = self.get_tool_input_options(tool_name)
+    def get_databases_name(self, database_names):
+        base_url = self.get_link(self.tool_name)
+        development_repo_href = HTMLParser(self.process_iframe_url(base_url)).find_development_repository_href()
+        databases_list = []
+        # for db_name in self.fetch_database_names(development_repo_href):
+        db_url = (
+            f"{development_repo_href}/{self.url_name}.xml"
+            if development_repo_href[-1] != "/"
+            else f"{development_repo_href}{self.url_name}.xml"
+        )
 
-        # Step 2: Extract input databases
-        input_databases = self.json_extract(tool_tables, database_name)
+        xml_parser = XMLParser(url=db_url)
+        db_data = self.find_values_in_nested_json(xml_parser.prepare_fetch_xml_data(), "rawLines", is_object=False)
+        flattened_data = self.flatten(db_data)
 
-        # Step 3: Remove duplicates
-        unique_databases = self.remove_duplicate(input_databases)
+        if flattened_data:
+            xml_parser.fetch_xml_data(flattened_data)
+            databases_list.append(xml_parser.find_databases_names(database_names))
 
-        # Step 4: Flatten the list
-        flattened_list = self.get_flattened_list(unique_databases)
+        unique_databases = self.remove_duplicate(self.flatten(databases_list))
 
-        # Step 5: Get databases
-        databases = self.get_databases(flattened_list)
+        return unique_databases
 
-        # return the result
-        return databases
-    
-    def show_tool_input(self, tool_name):
-        _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
-        tools = self.gi.tools.build(tool_id=self.tool_id, history_id=self.history_id)
-        input_states = (tools["state_inputs"])
-        #self.write_to_file(input_states, "input_states_humann.txt")
-        lst = self.extract_keys(input_states)
-        #lst2 = self.extract_keys_with_path(input_states)
-        inputs_opitons = self.get_tool_input_options(tool_name)
-        #self.write_to_file(inputs_opitons, "output_humann.txt")
-        dictonary, lst1 = (self.process_data(lst, inputs_options=inputs_opitons))
-        #pprint(dictonary)
-        #pprint(self.get_tool_input_options_all(tool_name))
-        all_combinations = [dict(zip(dictonary.keys(), values)) for values in product(*dictonary.values())]
-        
-        # Print the first 5 combinations as an example
-        """"
-        for i, combination in enumerate(all_combinations[:5], 0):
-            print(f"Combination {i}: {combination}")
-                #dict2  = self.genarate_input_file(lst2, dictonary)
-                #return self.build_tool(dict2)
-            #self.update_keys(input_states, combination)
-        pprint(self.json_input)
-        """
-        #pprint(self.get_link(tool_name))
-        url = self.get_link(tool_name) 
-        #pprint(self.parser(url))
-        #print(HTMLParser.find_development_repository_href(self.parser(url)))
-        url_parser = HTMLParser(self.parser(url))
-        l = (url_parser.find_development_repository_href())
-        url_parser = HTMLParser(url_parser.find_development_repository_href()) 
+    def fetch_database_names(self, development_repo_href):
+        url_parser = HTMLParser(url=development_repo_href)
         data = url_parser.get_github_resource()
-        xml = (self.find_values_in_nested_json(data, ".xml", is_object =False))
-        lst = []
-        for i in xml:
-            url_xml = (f"{l}/{i}")
-            print(url_xml)
-            url_xmlparser= XMLParser(url=url_xml)
-            data_xml =self.find_values_in_nested_json(url_xmlparser.prepare_fetch_xml_data(), "rawLines", is_object=False)
-            a = (self.flatten(data_xml))
-            if a:
-                #pprint(a)
-                url_xmlparser.fetch_xml_data(a)
-                url_xmlparser.find_protein_database_options("protein_database")
-                
+        xml_files = self.find_values_in_nested_json(data, ".xml", is_object=False)
 
-        
+        for xml_file in xml_files:
+            yield xml_file
 
     def update_keys(self, original, updated):
         for key, value in updated.items():
-            original = (self.update_values(original,key=key, new_values=value))
+            original = (self.update_values(original, key=key, new_values=value))
         return original
-    
+
     def build_input_states(self, tool_id: str, history_id: str, inputs: Dict[str, Any] | None = None):
-        
+
         try:
             tools = self.gi.tools.build(tool_id=tool_id, inputs=inputs, history_id=history_id)
             input_states = (tools["state_inputs"])
             return input_states
         except ConnectionError as e:
             if "500" in str(e) and "Uncaught exception in exposed API method" in str(e):
-            # Handle the specific ConnectionError with HTTP status code 500 and the specified error message
+                # Handle the specific ConnectionError with HTTP status code 500 and the specified error message
                 print("Caught the specific ConnectionError:")
                 print(f"Exception: {str(e)}")
             else:
                 # Handle other ConnectionError scenarios
                 print("Caught a ConnectionError, but not the specific case:")
                 print(f"Exception: {str(e)}")
-            
+
     def get_link(self, tool_name):
-        dictionary = self.get_tool_input_options_all(tool_name)
-        print(dictionary)
-        url_1 =  "https://" + dictionary["tool_shed"]
-        url = url_1+ "/view/" + dictionary["owner"] + "/" + dictionary["name"] + "/" +dictionary["changeset_revision"]
-        #pprint(url)
-        return url, url_1
-    
-    def parser(self, url):
-        base_url, url_1 = url
-        url_parser = HTMLParser(base_url)
-        iframe_src = url_parser.get_iframe_src()
+        """
+        Construct a URL based on the tool name and its input options.
+
+        Args:
+            tool_name (str): The name of the tool.
+
+        Returns:
+            tuple: A tuple containing the full URL and the base URL.
+        """
+        tool_options = self.get_tool_input_options_all(tool_name)
+
+        tool_shed = tool_options["tool_shed"]
+        owner = tool_options["owner"]
+        name = tool_options["name"]
+        changeset_revision = tool_options["changeset_revision"]
+
+        base_url = f"https://{tool_shed}"
+        full_url = f"{base_url}/view/{owner}/{name}/{changeset_revision}"
+
+        self.url_name = name
+
+        return full_url, base_url
+
+    def process_iframe_url(self, url_tuple):
+        """
+        Process the URL to extract and handle the iframe source URL.
+
+        Args:
+            url_tuple (tuple): A tuple containing base_url and url_1.
+
+        Returns:
+            str or None: The iframe source URL if found, otherwise None.
+        """
+        base_url, url_1 = url_tuple
+        html_parser = HTMLParser(base_url)
+        iframe_src = html_parser.get_iframe_src()
 
         if iframe_src:
             iframe_url = f"{url_1}{iframe_src}"
-            print(f"The source URL of the iframe is: {iframe_url}")
             return iframe_url
         else:
             print("No iframe found in the HTML content.")
             return None
-        
-
-
-    def build_tool(self, dictionary):
-        # Initialize an empty list to store the state_inputs for each tool
-        state_inputs_list = []
-
-        # Iterate through each key-value pair in the dictionary
-        for key, values in dictionary.items():
-            # Initialize a dictionary for inputs
-            inputs = {}
-
-            # Iterate through the values for the current key
-            for value in values:
-                # Assign the current key and value to the inputs dictionary
-                inputs[key] = value
-
-                # Build the tool using Galaxy API
-                tool_result = self.gi.tools.build(tool_id=self.tool_id, inputs=inputs, history_id=self.history_id)
-
-                # Extract and append the 'state_inputs' to the list
-                state_inputs_list.append(tool_result["state_inputs"])
-
-        # Return the list of state_inputs for all tools
-        return state_inputs_list
-                              
 
     def process_data(self, keys, inputs_options):
         result_dict = {}
@@ -507,7 +421,6 @@ class Tool:
         for key in keys:
             # Extract values based on the key
             extracted_values, multiple_values = self.extract_values_from_nested_json(inputs_options, key)
-            #pprint(extracted_values)
             # Check if the extracted values are not empty
             if extracted_values:
                 flattened_values = self.get_flattened_list(extracted_values)
@@ -520,7 +433,7 @@ class Tool:
 
         return result_dict, multiple_values
 
-    def update_values(self, dic, key, new_values, paired:bool = False):
+    def update_values(self, dic, key, new_values, paired: bool = False):
         """
         Recursively updates values in a nested dictionary based on a specified key.
 
@@ -552,8 +465,8 @@ class Tool:
         recursion(dictionary, key, new_values)
 
         return dictionary
-    
-    def find_values_in_nested_json(self, json_object, target_key, is_object:str=True):
+
+    def find_values_in_nested_json(self, json_object, target_key, is_object: str = True):
         """
         Recursively searches for values of a specified key in a nested JSON object.
 
@@ -589,7 +502,7 @@ class Tool:
                         if isinstance(v, str):
                             if key in v and k == "name":
                                 result_values.append(v)
-                        else:    
+                        else:
                             if k == key:
                                 result_values.append(v)
             elif isinstance(obj, list):
@@ -599,7 +512,7 @@ class Tool:
 
         found_values = recursive_search(json_object, result_values, target_key)
         return found_values
-    
+
     def flatten(self, lst):
         flat_list = []
         for item in lst:
@@ -608,6 +521,218 @@ class Tool:
             else:
                 flat_list.append(item)
         return flat_list
+
+    def generate_input_combinations(
+        self,
+        input_files: List[str],
+        filter_keyword,
+        value: str,
+        key,
+        updated_dict: Dict,
+        paired=True
+    ):
+        """
+        Generate input combinations based on keyword filtering and tool options.
+
+        Args:
+            input_files (List[str]): List of input files.
+            filter_keyword (str): Keyword to filter input combinations.
+            value (str): Description of the value parameter.
+            key (type): Description of the key parameter.
+
+        Returns:
+            List[dict]: List of dictionaries representing input combinations.
+        """
+        inputs = input_files.copy()
+
+        # Extract keys with path from my_dict
+        keys_with_path = self.extract_keys_with_path(self.my_dict)
+
+        # Create a dictionary to store filtered keys based on the first keyword
+        filtered_keys = {i: key for i in keys_with_path if filter_keyword in i.split("|")}
+
+        # Build the original dictionary using the filtered keys
+        original_state_dict = self.try_building_original_states(filtered_keys)
+        # If the original dictionary is None, return an empty list
+        if original_state_dict is None:
+            return []
+        # Store the original dictionary in my_dict2
+        self.my_dict2 = original_state_dict
+        # Update the original dictionary with input_files using the update_values method
+        updated_state_dict = self.update_values(original_state_dict, value, inputs, paired)
+        dict_updated = (self.update_keys(updated_state_dict.copy(), updated_dict))
+
+        return dict_updated
+
+    def try_building_original_states(self, filtered_keys):
+        """
+        Attempt to build the original dictionary using the filtered keys with a retry mechanism.
+
+        Args:
+            filtered_keys (dict): Filtered keys for building the original dictionary.
+
+        Returns:
+            dict or None: Original dictionary or None if it cannot be built.
+        """
+        current_partial_state = {}
+        for key, value in filtered_keys.items():
+            current_partial_state[key] = value
+            original_state = self.build_input_states(
+                tool_id=self.tool_id,
+                history_id=self.history_id,
+                inputs=current_partial_state
+            )
+            if original_state is not None:
+                return original_state
+            current_partial_state = {}
+        return None
+
+    def load_data_from_file(self, file_path):
+        with open(file_path, 'r') as file:
+            loaded_data = json.load(file)
+
+        return loaded_data
+
+    def get_names_from_data(self, data):
+        return [entry['name'] for entry in data]
+
+    def find_databases(self):
+        lst_db = []
+        lst2 = ["humann_nucleotide_database", "humann_protein_database", "rRNA_databases"]
+        # for database in self.datatabels_name:
+        for database in lst2:
+            print(database)
+            lst_db.append(self.get_databases_name(database_names=database))
+        return lst_db
+
+    def get_all_input_combinations(self, key_word):
+        """
+        Retrieves input combinations based on a keyword and tool options.
+
+        Args:
+            input_files (List[str]): List of input files.
+            key_word (str): Keyword to filter input combinations.
+
+        Returns:
+            List[dict]: List of dictionaries representing input combinations.
+        """
+        d1 = {}
+        d2 = {}
+        l1 = []
+        l2 = []
+        # Get tool input options and process data
+        inputs_options = self.get_tool_input_options(self.tool_name)
+        input_options_dictionary = self.find_values_in_nested_json(inputs_options, key_word)
+
+        lst = self.remove_duplicate(self.flatten(self.find_databases()))
+        d1, l1 = self.process_data(lst, inputs_options=input_options_dictionary)
+        d2, l2 = self.process_data(lst, inputs_options=inputs_options)
+        # combine the dictionarys
+        dictionary = {**d1, **d2}
+        pprint(dictionary)
+        multiple_list = [*l1, *l2]
+        multiple_list = self.remove_duplicate(multiple_list)
+        all_combinations = self.generate_combinations(dictionary=dictionary, exclude_keys=multiple_list)
+
+        return all_combinations
+
+    def generate_combinations(self, dictionary: Dict, exclude_keys: List):
+        # Prepare an empty dictionary to store the excluded key-value pairs
+        excluded_dict = {}
+
+        # Create a copy of the original dictionary for manipulation
+        remaining_dict = dictionary.copy()
+
+        # Move the excluded keys and their values to the excluded_dict
+        for key in exclude_keys:
+            excluded_dict[key] = remaining_dict.pop(key)
+
+        # Generate combinations of the remaining values
+        remaining_combinations = [dict(zip(remaining_dict.keys(), values)) for values in product(*remaining_dict.values())]
+
+        # Merge the excluded_dict with each remaining combination
+        all_combinations = [combination | excluded_dict for combination in remaining_combinations]
+
+        # Return the final list of combinations
+        return all_combinations
+
+    def get_combination_test_inputs(
+        self,
+        input_files: List[str],
+        filter_keyword,
+        value: str,
+        key,
+        updated_dict: Dict,
+        paired=True
+    ):
+
+        # Update the original dictionary with input_files using the update_values method
+        updated_dict = self.generate_input_combinations(
+            input_files=input_files,
+            filter_keyword=filter_keyword,
+            value=value,
+            key=key,
+            updated_dict=updated_dict,
+            paired=paired
+        )
+
+        # Get all input combinations
+        all_combinations = self.get_all_input_combinations(key_word=key)
+
+        # Generate input_list with updated dictionaries for each combination
+        input_list = [self.update_keys(updated_dict.copy(), combination) for combination in all_combinations]
+
+        return input_list
+
+    def is_entry_present(self, data, entry):
+        # Check if the entry is present (ignoring timestamp)
+        for i in data:
+            if i.get("input") == entry:
+                return True
+        return False
+
+    def add_entry_to_json(self, entry, file_path, error_message):
+        # Load existing JSON data
+        try:
+            with open(file_path, 'r') as json_file:
+                data = json.load(json_file)
+        except FileNotFoundError:
+            # If the file doesn't exist, initialize an empty list
+            data = []
+
+        # Check if the entry is already present (ignoring timestamp)
+        if not self.is_entry_present(data, entry):
+            # Add the entry to the data
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            data_entry = {
+                "timestamp": timestamp,
+                "error_message": error_message,
+                "input": entry
+            }
+            if isinstance(data, list):
+                data.append(data_entry)
+            else:
+                data = [data_entry]
+
+            # Write the updated data back to the JSON file
+            with open(file_path, 'w') as json_file:
+                json.dump(data, json_file, indent=2)
+
+    def handle_error_entry(self, entry, error_message):
+        file_path = f'{self.tool_name}_incorrect_combination.json'
+        self.add_entry_to_json(entry=entry, file_path=file_path, error_message=error_message)
+
+    def wait_for_job_completion(self, job_id):
+        while True:
+            try:
+                job_info = self.gi.jobs.show_job(job_id)
+                if job_info['state'] != 'queued' and job_info['state'] != "running":
+                    return job_info['state']
+                time.sleep(5)
+            except ConnectionError as e:
+                print(f"Failed to connect to Galaxy: {e}")
+                print("Retrying in 2 seconds...")
+                time.sleep(2)
 
 
 class FastQCTool(Tool):
@@ -640,7 +765,7 @@ class FastQCTool(Tool):
         """
         return "T1A_forward", "T1A_reverse"
 
-    def run_tool_with_input_files(self, tool_name: str):
+    def run_tool_with_input_files(self, tool_name: str, combination_test: bool = False):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names())
         inputs_1, inputs_2 = self.get_inputs(self.input_files)
         super().run_tool(inputs=inputs_1)
@@ -650,14 +775,13 @@ class FastQCTool(Tool):
 class MultiQCTool(Tool):
     SOFTWARE = "fastqc"
     KEY_WORD = "software"
-    INPUT_WORDS = ["type"]
     VALUES = "values"
-
 
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
         self.tool_name = "MultiQC"
+        self.input_dict = {}
 
     def get_inputs(self, input_files: List[str]):
         inputs = {
@@ -667,75 +791,44 @@ class MultiQCTool(Tool):
             }
         }
         return inputs
-    
-    def get_inputs_combination_test(self, input_files: List[str], key_word):
-        """
-        Generate input combinations based on a keyword and tool options.
 
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        inputs = input_files.copy()
-        # Extract keys with path from my_dict
-        keys_with_path = self.extract_keys_with_path(self.my_dict)
-
-        # Create a dictionary to store filtered keys based on the keyword
-        input_dict = {i: self.SOFTWARE for i in keys_with_path if key_word in i.split("|")}
-
-        # Build the original dictionary using the filtered keys
-        original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
-
-        #pprint(original_dict)
-        #pprint(inputs)
-
-        # Update the original dictionary with input_files using the update_values method
-        updated_dict = super().update_values(original_dict, self.VALUES, inputs)
-        #pprint(updated_dict)
-
-        # Get all input combinations
-        all_combinations = self.get_all_input_combinations()
-
-        # Generate input_list with updated dictionaries for each combination
-        input_list = [self.update_keys(updated_dict.copy(), combination) for combination in all_combinations]
-
-        return input_list
-    
-    def get_all_input_combinations(self):
-        """
-        Retrieves input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        # Get tool input options and process data
-        inputs_options = self.get_tool_input_options(self.tool_name)
-        input_options_dictionary = self.find_values_in_nested_json(inputs_options, self.SOFTWARE)
-        dictionary, l1 = self.process_data(self.INPUT_WORDS, inputs_options=input_options_dictionary)
-        # Generate all combinations of input values
-        all_combinations = [dict(zip(dictionary.keys(), values)) for values in product(*dictionary.values())]
-        return all_combinations
-        
     def get_dataset_names(self):
         return "FastQC on data 1: RawData", "FastQC on data 2: RawData"
 
     def run_tool_with_input_files(self, tool_name: str, combination_test: bool = False):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names())
         if combination_test:
-            inputs = self.get_inputs_combination_test(self.input_files,self.KEY_WORD)
-            
-            for inp in inputs:
-                super().run_tool(inputs=inp, combination_test=combination_test)
+            inputs = super().get_combination_test_inputs(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SOFTWARE,
+                updated_dict=self.input_dict,
+                paired=False
+            )
+
+            for input_combination in inputs:
+                try:
+                    super().run_tool(inputs=input_combination, combination_test=True)
+                except Exception as e:
+                    super().handle_error_entry(input_combination, str(e))
+
+            for job_info in self.job_id:
+                completion_status = super().wait_for_job_completion(job_info[0])
+                if completion_status == "error":
+                    super().handle_error_entry(job_info[1], "job has error state")
+
         else:
-            inputs = self.get_inputs(self.input_files)
-            super().run_tool(inputs=inputs)    
+            inputs = super().generate_input_combinations(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SOFTWARE,
+                updated_dict=self.input_dict,
+                paired=False
+            )
+            super().run_tool(inputs=inputs)
+
 
 class CutadaptTool(Tool):
     LIBRARY_TYPE = 'paired'
@@ -743,7 +836,6 @@ class CutadaptTool(Tool):
     QUALITY_CUTOFF = '20'
     OUTPUT_SELECTOR = 'report'
     KEY_WORD = "type"
-    INPUT_WORDS = ["action", 'pair_filter', 'shorten_values']
     VALUES = "values"
 
     def __init__(self, server: str, api_key: str, history_id: str):
@@ -751,9 +843,9 @@ class CutadaptTool(Tool):
         self.history_id = history_id
         self.tool_name = "Cutadapt"
         self.input_dict = {
-            "minimum_length": [self.MINIMUM_LENGTH],
-            "quality_cutoff": [self.QUALITY_CUTOFF],
-            "output_selector": [self.OUTPUT_SELECTOR]
+            "minimum_length": self.MINIMUM_LENGTH,
+            "quality_cutoff": self.QUALITY_CUTOFF,
+            "output_selector": self.OUTPUT_SELECTOR
         }
 
     def get_inputs(self, inputs_files: List[str]):
@@ -784,71 +876,35 @@ class CutadaptTool(Tool):
     def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names())
         if combination_test:
-            inputs = self.get_inputs_combination_test(self.input_files, self.KEY_WORD)
-            for inp in inputs:
-                super().run_tool(inputs=inp, combination_test=combination_test)
+            inputs = super().get_combination_test_inputs(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.LIBRARY_TYPE,
+                updated_dict=self.input_dict
+            )
+
+            for input_combination in inputs:
+                try:
+                    super().run_tool(inputs=input_combination, combination_test=True)
+                except Exception as e:
+                    super().handle_error_entry(input_combination, str(e))
+
+            for job_info in self.job_id:
+                completion_status = super().wait_for_job_completion(job_info[0])
+                if completion_status == "error":
+                    super().handle_error_entry(job_info[1], "job has error state")
+
         else:
-            inputs = self.get_inputs(self.input_files)
+            inputs = super().generate_input_combinations(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.LIBRARY_TYPE,
+                updated_dict=self.input_dict
+            )
             super().run_tool(inputs=inputs)
             super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_cutadapt())
-
-    def get_inputs_combination_test(self, input_files: List[str], key_word):
-        """
-        Generate input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        inputs = input_files.copy()
-        # Extract keys with path from my_dict
-        keys_with_path = self.extract_keys_with_path(self.my_dict)
-
-        # Create a dictionary to store filtered keys based on the keyword
-        input_dict = {i: self.LIBRARY_TYPE for i in keys_with_path if key_word in i.split("|")}
-
-        # Build the original dictionary using the filtered keys
-        original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
-        self.my_dict2 = original_dict
-        # Update the original dictionary with input_files using the update_values method
-        updated_dict = super().update_values(original_dict, self.VALUES, inputs, paired=True)
-        # Get all input combinations
-        all_combinations = self.get_all_input_combinations()
-
-        # Generate input_list with updated dictionaries for each combination
-        input_list = [self.update_keys(updated_dict.copy(), combination) for combination in all_combinations]
-
-        return input_list
-    
-    def get_all_input_combinations(self):
-        """
-        Retrieves input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        d1 = {}
-        d2 = {}
-        l1 = []
-        l2 = []
-        # Get tool input options and process data
-        inputs_options = self.get_tool_input_options(self.tool_name)
-        input_options_dictionary = self.find_values_in_nested_json(inputs_options, self.LIBRARY_TYPE)
-        d1, l1= self.process_data(self.INPUT_WORDS, inputs_options=input_options_dictionary)
-        d2, l2 = self.process_data(self.INPUT_WORDS, inputs_options=inputs_options)
-
-        # combine the dictionarys
-        dictionary = {**d1, **d2, **self.input_dict}
-        # Generate all combinations of input values
-        all_combinations = [dict(zip(dictionary.keys(), values)) for values in product(*dictionary.values())]
-        return all_combinations
 
 
 class SortMeRNATool(Tool):
@@ -860,16 +916,17 @@ class SortMeRNATool(Tool):
     INPUT_DATABASES = 'input_databases'
     KEY_WORD = 'sequencing_type_selector'
     VALUES = "values"
-    INPUT_WORDS = ["paired_type", 'report_type', 'input_databases']
 
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
         self.tool_name = "Filter with SortMeRNA"
         self.input_dict = {
-            "log": [self.LOG],
-            "other": [self.ALIGNED_FASTX_OTHER],
-            "databases_selector": [self.DATABASES_SELECTOR]
+            "log": self.LOG,
+            "other": self.ALIGNED_FASTX_OTHER,
+            "databases_selector": self.DATABASES_SELECTOR,
+            "paired_type": self.PAIRED_TYPE,
+            "input_databases": self.get_datatables(),
         }
 
     def get_inputs(self, inputs_files):
@@ -889,119 +946,66 @@ class SortMeRNATool(Tool):
             'log': self.LOG
         }
         return inputs
-    
-    def get_inputs_combination_test(self, input_files: List[str], key_word):
-        """
-        Generate input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        inputs = input_files.copy()
-        # Extract keys with path from my_dict
-        keys_with_path = self.extract_keys_with_path(self.my_dict)
-
-        # Create a dictionary to store filtered keys based on the keyword
-        input_dict = {i: self.SEQUEUCING_TYPE_SELECTOR for i in keys_with_path if key_word in i.split("|")}
-
-        # Build the original dictionary using the filtered keys
-        original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
-        self.my_dict2 = original_dict
-        # Update the original dictionary with input_files using the update_values method
-        updated_dict = super().update_values(original_dict, self.VALUES, inputs, paired=True)
-        # Get all input combinations
-        all_combinations = self.get_all_input_combinations()
-
-        # Generate input_list with updated dictionaries for each combination
-        input_list = [self.update_keys(updated_dict.copy(), combination) for combination in all_combinations]
-
-        return input_list
 
     def get_dataset_names(self):
         return "QC controlled forward reads", "QC controlled reverse reads"
 
     def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        #pprint(self.get_all_input_combinations())
         if combination_test:
-            inputs = self.get_inputs_combination_test(self.input_files, self.KEY_WORD)
-            for inp in inputs:
+            inputs = super().get_combination_test_inputs(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SEQUEUCING_TYPE_SELECTOR,
+                updated_dict=self.input_dict
+            )
+
+            for input_combination in inputs:
                 try:
-                    super().run_tool(inputs=inp, combination_test=combination_test)
+                    super().run_tool(inputs=input_combination, combination_test=True)
                 except Exception as e:
-                    file_pyth = "errors" + self.tool_name + ".txt"
-                    dict2 = {}
-                    dict2["error"] = str(e)
-                    dict2["input"] = inp
-                    self.add_row_if_not_present(file_pyth, dict2) 
+                    super().handle_error_entry(input_combination, str(e))
+
+            for job_info in self.job_id:
+                completion_status = super().wait_for_job_completion(job_info[0])
+                if completion_status == "error":
+                    super().handle_error_entry(job_info[1], "job has error state")
 
         else:
-            inputs = self.get_inputs(self.input_files)
+            inputs = super().generate_input_combinations(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SEQUEUCING_TYPE_SELECTOR,
+                updated_dict=self.input_dict
+            )
             super().run_tool(inputs=inputs)
 
     def get_datatables(self):
-        databases = super().get_datatables(self.tool_name, self.INPUT_DATABASES)
-        #pprint(databases)
+        databases = [
+            '2.1b-rfam-5s-database-id98',
+            '2.1b-silva-arc-23s-id98',
+            '2.1b-silva-euk-28s-id98',
+            '2.1b-silva-bac-23s-id98',
+            '2.1b-silva-euk-18s-id95',
+            '2.1b-silva-bac-16s-id90',
+            '2.1b-rfam-5.8s-database-id98',
+            '2.1b-silva-arc-16s-id95'
+        ]
         return databases
-    
-    def get_all_input_combinations(self):
-        """
-        Retrieves input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        d1 = {}
-        d2 = {}
-        l1 = []
-        l2 = []
-        # Get tool input options and process data
-        inputs_options = self.get_tool_input_options(self.tool_name)
-        input_options_dictionary = self.find_values_in_nested_json(inputs_options, self.SEQUEUCING_TYPE_SELECTOR)
-        d1, l1= self.process_data(self.INPUT_WORDS, inputs_options=input_options_dictionary)
-        d2, l2 = self.process_data(self.INPUT_WORDS, inputs_options=inputs_options)
-        # combine the dictionarys
-        dictionary = {**d1, **d2, **self.input_dict}
-        pprint(dictionary)
-        multiple_list = [*l1, *l2]
-        multiple_list = self.remove_duplicate(multiple_list)
-        all_combinations = self.generate_combinations(dictionary=dictionary, exclude_keys=multiple_list)
-        return all_combinations
-    
-    def generate_combinations(self, dictionary: Dict, exclude_keys: List):
-        # Prepare an empty dictionary to store the excluded key-value pairs
-        excluded_dict = {}
-        
-        # Create a copy of the original dictionary for manipulation
-        remaining_dict = dictionary.copy()
-        
-        # Move the excluded keys and their values to the excluded_dict
-        for key in exclude_keys:
-            excluded_dict[key] = remaining_dict.pop(key)
-            
-        # Generate combinations of the remaining values
-        remaining_combinations = [dict(zip(remaining_dict.keys(), values)) for values in product(*remaining_dict.values())]
-        
-        # Merge the excluded_dict with each remaining combination
-        all_combinations = [combination | excluded_dict for combination in remaining_combinations]
-
-        # Return the final list of combinations
-        return all_combinations
 
 
 class FASTQinterlacerTool(Tool):
+    VALUES = "values"
+    KEY_WORD = "reads_selector"
+    PAIRED = "paired"
+
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
         self.tool_name = "FASTQ interlacer"
+        self.input_dict = {}
 
     def get_inputs(self, inputs_files: List[str]):
         input_file_1, input_file_2 = inputs_files
@@ -1024,9 +1028,15 @@ class FASTQinterlacerTool(Tool):
     def get_output_names_of_interlacer(self):
         return ["FASTQ interlacer pairs"]
 
-    def run_tool_with_input_files(self, tool_name: str):
+    def run_tool_with_input_files(self, tool_name: str, combination_test: bool = False):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        inputs = self.get_inputs(self.input_files)
+        inputs = super().generate_input_combinations(
+            input_files=self.input_files,
+            filter_keyword=self.KEY_WORD,
+            value=self.VALUES,
+            key=self.PAIRED,
+            updated_dict=self.input_dict
+        )
         super().run_tool(inputs=inputs)
         super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_interlacer())
 
@@ -1036,19 +1046,19 @@ class MetaPhlAnTool(Tool):
     STATE_Q = '0.1'
     KRONA_OUTPUT = "True"
     TAX_LEV_SPLIT_LEVELS = "True"
-    INPUT_WORDS = ["cached_db", 'tax_lev', 't']
     DB_SELECTOR = "cached"
     KEY_WORD = "selector"
     VALUES = "values"
-    KEY_WORD_2 = "raw_in"
+
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
         self.tool_name = "MetaPhlAn"
         self.input_dict = {
-            "krona_output": [self.KRONA_OUTPUT],
-            "stat_q": [self.STATE_Q],
-            "db_selector": [self.DB_SELECTOR]
+            "krona_output": self.KRONA_OUTPUT,
+            "stat_q": self.STATE_Q,
+            "db_selector": self.DB_SELECTOR,
+            "split_levels": self.TAX_LEV_SPLIT_LEVELS
         }
 
     def get_inputs(self, inputs_files: List[str]):
@@ -1072,107 +1082,35 @@ class MetaPhlAnTool(Tool):
 
     def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
         super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        #pprint(self.get_all_input_combinations())
         if combination_test:
-            inputs = self.get_inputs_combination_test(self.input_files, self.KEY_WORD, self.KEY_WORD_2)
-            for inp in inputs:
+            inputs = super().get_combination_test_inputs(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SELECTOR,
+                updated_dict=self.input_dict
+            )
+
+            for input_combination in inputs:
                 try:
-                    super().run_tool(inputs=inp, combination_test=combination_test)
+                    super().run_tool(inputs=input_combination, combination_test=True)
                 except Exception as e:
-                    file_pyth = "errors" + self.tool_name + ".txt"
-                    dict2 = {}
-                    dict2["error"] = str(e)
-                    dict2["input"] = inp
-                    self.add_row_if_not_present(file_pyth, dict2) 
+                    super().handle_error_entry(input_combination, str(e))
+
+            for job_info in self.job_id:
+                completion_status = super().wait_for_job_completion(job_info[0])
+                if completion_status == "error":
+                    super().handle_error_entry(job_info[1], "job has error state")
 
         else:
-            inputs = self.get_inputs(self.input_files)
+            inputs = super().generate_input_combinations(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SELECTOR,
+                updated_dict=self.input_dict
+            )
             super().run_tool(inputs=inputs)
-    
-    def get_inputs_combination_test(self, input_files: List[str], key_word, key_word_2 = None):
-        """
-        Generate input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        inputs = input_files.copy()
-        # Extract keys with path from my_dict
-        keys_with_path = self.extract_keys_with_path(self.my_dict)
-        #pprint(keys_with_path)
-        # Create a dictionary to store filtered keys based on the keyword
-        input_dict = {i: self.SELECTOR for i in keys_with_path if key_word in i.split("|")}
-        input_dict_2 = input_dict.copy()
-        if key_word_2 is not None:
-            for key in input_dict_2.keys():
-                if key_word_2 not in key:
-                   del input_dict[key]
-
-        # Build the original dictionary using the filtered keys
-        original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict)
-        self.my_dict2 = original_dict
-        # Update the original dictionary with input_files using the update_values method
-        updated_dict = super().update_values(original_dict, self.VALUES, inputs, paired=True)
-        # Get all input combinations
-        all_combinations = self.get_all_input_combinations()
-
-        # Generate input_list with updated dictionaries for each combination
-        input_list = [self.update_keys(updated_dict.copy(), combination) for combination in all_combinations]
-
-        return input_list
-    
-    def get_all_input_combinations(self):
-        """
-        Retrieves input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        d1 = {}
-        d2 = {}
-        l1 = []
-        l2 = []
-        # Get tool input options and process data
-        inputs_options = self.get_tool_input_options(self.tool_name)
-        input_options_dictionary = self.find_values_in_nested_json(inputs_options, self.SELECTOR)
-        d1, l1= self.process_data(self.INPUT_WORDS, inputs_options=input_options_dictionary)
-        d2, l2 = self.process_data(self.INPUT_WORDS, inputs_options=inputs_options)
-        # combine the dictionarys
-        dictionary = {**d1, **d2, **self.input_dict}
-        pprint(dictionary)
-        multiple_list = [*l1, *l2]
-        multiple_list = self.remove_duplicate(multiple_list)
-        all_combinations = self.generate_combinations(dictionary=dictionary, exclude_keys=multiple_list)
-        pprint(len(all_combinations))
-        return all_combinations
-    
-    def generate_combinations(self, dictionary: Dict, exclude_keys: List):
-        # Prepare an empty dictionary to store the excluded key-value pairs
-        excluded_dict = {}
-        
-        # Create a copy of the original dictionary for manipulation
-        remaining_dict = dictionary.copy()
-        
-        # Move the excluded keys and their values to the excluded_dict
-        for key in exclude_keys:
-            excluded_dict[key] = remaining_dict.pop(key)
-            
-        # Generate combinations of the remaining values
-        remaining_combinations = [dict(zip(remaining_dict.keys(), values)) for values in product(*remaining_dict.values())]
-        
-        # Merge the excluded_dict with each remaining combination
-        all_combinations = [combination | excluded_dict for combination in remaining_combinations]
-
-        # Return the final list of combinations
-        return all_combinations
 
 
 class HUMAnNTool(Tool):
@@ -1181,16 +1119,17 @@ class HUMAnNTool(Tool):
     HUMAnN_PROTEIN_DATABASE = 'uniref-uniref90_diamond-3.0.0-13052021'
     FILE_PATH = "incorrect_database_combination.tsv"
     KEY_WORD = "selector"
-    INPUT_WORDS = ["nucleotide_database", 'protein_database', 'cached_db']
     VALUES = "values"
 
     def __init__(self, server: str, api_key: str, history_id: str):
         super().__init__(server, api_key)
         self.history_id = history_id
         self.tool_name = "HUMAnN"
-        self.nucleotide_database = []
-        self.protein_database = []
-        self.input_dict = {}
+        self.input_dict = {
+            "nucleotide_database": self.HUMAnN_NUCLEOTIDE_DATABASE,
+            "protein_database": self.HUMAnN_PROTEIN_DATABASE
+
+        }
 
     def get_inputs(self, inputs_files: List[str], nucleotide_database, protein_database):
         input_file_1, input_file_2 = inputs_files
@@ -1224,127 +1163,41 @@ class HUMAnNTool(Tool):
         return dataset_ids
 
     def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
+        self.datatabels_name = self.get_names_from_data(self.load_data_from_file(self.file_path))
         _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
         input_data_ids = self.get_input_data_ids(self.get_dataset_names())
         self.input_files = super().get_input_files(input_data_ids)
-        self.get_datatables()
         self.my_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id)
         # run all possible options of the databases
-
         if combination_test:
-            inputs = self.get_inputs_combination_test(self.input_files, self.KEY_WORD)
-            for inp in inputs:
+            inputs = super().get_combination_test_inputs(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SELECTOR,
+                updated_dict=self.input_dict
+            )
+
+            for input_combination in inputs:
                 try:
-                    #pprint(inputs
-                    super().run_tool(inputs=inp, combination_test=combination_test)
+                    super().run_tool(inputs=input_combination, combination_test=True)
                 except Exception as e:
-                    file_pyth = "errors " + self.tool_name + ".txt"
-                    dict2 = {}
-                    dict2["error"] = str(e)
-                    dict2["input"] = inp
-                    self.add_row_if_not_present(file_pyth, dict2) 
+                    super().handle_error_entry(input_combination, str(e))
+
+            for job_info in self.job_id:
+                completion_status = super().wait_for_job_completion(job_info[0])
+                if completion_status == "error":
+                    super().handle_error_entry(job_info[1], "job has error state")
+
         else:
-            inputs = self.get_inputs(
-                self.input_files,
-                nucleotide_database=self.HUMAnN_NUCLEOTIDE_DATABASE,
-                protein_database=self.HUMAnN_PROTEIN_DATABASE
+            inputs = super().generate_input_combinations(
+                input_files=self.input_files,
+                filter_keyword=self.KEY_WORD,
+                value=self.VALUES,
+                key=self.SELECTOR,
+                updated_dict=self.input_dict
             )
             super().run_tool(inputs=inputs)
-
-    def get_datatables(self):
-        self.nucleotide_database = super().get_datatables(self.tool_name, "nucleotide_database")
-        self.protein_database = super().get_datatables(self.tool_name, "protein_database")
-    
-    def get_inputs_combination_test(self, input_files: List[str], key_word, key_word_2 = None):
-        """
-        Generate input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        inputs = input_files.copy()
-        # Extract keys with path from my_dict
-        keys_with_path = self.extract_keys_with_path(self.my_dict)
-        # Create a dictionary to store filtered keys based on the keyword
-        input_dict = {i: self.SELECTOR for i in keys_with_path if key_word in i.split("|")}
-        input_dict_2 = input_dict.copy()
-        if key_word_2 is not None:
-            for key in input_dict_2.keys():
-                if key_word_2 not in key:
-                   del input_dict[key]
-        #pprint(input_dict)
-        input_dict_3 = {}
-        # Build the original dictionary using the filtered keys
-        for key, value in input_dict.items():
-            input_dict_3[key] = value
-            original_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id, inputs=input_dict_3)
-            if original_dict is not None:
-               break 
-            input_dict_3 = {}
-        #pprint(original_dict)
-        self.my_dict2 = original_dict
-        # Update the original dictionary with input_files using the update_values method
-        updated_dict = super().update_values(original_dict, self.VALUES, inputs, paired=True)
-        # Get all input combinations
-        all_combinations = self.get_all_input_combinations()
-
-        # Generate input_list with updated dictionaries for each combination
-        input_list = [self.update_keys(updated_dict.copy(), combination) for combination in all_combinations]
-
-        return input_list
-    
-    def get_all_input_combinations(self):
-        """
-        Retrieves input combinations based on a keyword and tool options.
-
-        Args:
-            input_files (List[str]): List of input files.
-            key_word (str): Keyword to filter input combinations.
-
-        Returns:
-            List[dict]: List of dictionaries representing input combinations.
-        """
-        d1 = {}
-        d2 = {}
-        l1 = []
-        l2 = []
-        # Get tool input options and process data
-        inputs_options = self.get_tool_input_options(self.tool_name)
-        input_options_dictionary = self.find_values_in_nested_json(inputs_options, self.SELECTOR)
-        d1, l1= self.process_data(self.INPUT_WORDS, inputs_options=input_options_dictionary)
-        d2, l2 = self.process_data(self.INPUT_WORDS, inputs_options=inputs_options)
-        # combine the dictionarys
-        dictionary = {**d1, **d2, **self.input_dict}
-        pprint(dictionary)
-        multiple_list = [*l1, *l2]
-        multiple_list = self.remove_duplicate(multiple_list)
-        all_combinations = self.generate_combinations(dictionary=dictionary, exclude_keys=multiple_list)
-        pprint(len(all_combinations))
-        return all_combinations
-    
-    def generate_combinations(self, dictionary: Dict, exclude_keys: List):
-        # Prepare an empty dictionary to store the excluded key-value pairs
-        excluded_dict = {}
-        
-        # Create a copy of the original dictionary for manipulation
-        remaining_dict = dictionary.copy()
-        
-        # Move the excluded keys and their values to the excluded_dict
-        for key in exclude_keys:
-            excluded_dict[key] = remaining_dict.pop(key)
-            
-        # Generate combinations of the remaining values
-        remaining_combinations = [dict(zip(remaining_dict.keys(), values)) for values in product(*remaining_dict.values())]
-        
-        # Merge the excluded_dict with each remaining combination
-        all_combinations = [combination | excluded_dict for combination in remaining_combinations]
-
-        # Return the final list of combinations
-        return all_combinations
 
 
 class RenormalizeTool(Tool):

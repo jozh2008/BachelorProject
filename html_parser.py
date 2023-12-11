@@ -1,11 +1,10 @@
 from bs4 import BeautifulSoup
 import requests
-import json
-from urllib.parse import urlparse
-from pprint import pprint, PrettyPrinter
+from pprint import PrettyPrinter
 server = 'https://usegalaxy.eu/'
 # api kex of account
 api_key = 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
+
 
 class HTMLParser:
     def __init__(self, url):
@@ -15,7 +14,6 @@ class HTMLParser:
     def load_html(self):
         # Make an HTTP request to the URL
         response = requests.get(self.url)
-        #print(self.url)
         if response.status_code == 200:
             # Parse the HTML content with BeautifulSoup
             self.soup = BeautifulSoup(response.text, 'lxml')
@@ -34,7 +32,7 @@ class HTMLParser:
 
     def find_development_repository_href(self):
         # Find all div elements with the specified class
-        development_repo_divs = self.soup.find_all('div', class_ = "form-row")
+        development_repo_divs = self.soup.find_all('div', class_="form-row")
 
         # Iterate through the found divs
         for development_repo_div in development_repo_divs:
@@ -50,26 +48,19 @@ class HTMLParser:
 
         # Return None if the development repository href is not found
         return None
-    
+
     def get_github_resource(self):
         try:
             response = requests.get(self.url)
-            #print(response)
             response.raise_for_status()
-            #self.write_to_fil(, "github.txt")
             resource_info = response.json()
-            #resource_info = response.text()
-            #pprint(resource_info)
-           
             return resource_info
         except requests.exceptions.RequestException as e:
             print(f"Error fetching GitHub resource information: {e}")
             return None
-    
+
     def write_to_file(self, data, name):
         with open(name, 'w') as file:
             pp = PrettyPrinter(indent=4, stream=file)
             pp.pprint(data)
         file.close()
-
-

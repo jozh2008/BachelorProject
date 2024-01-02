@@ -8,6 +8,7 @@ import copy
 from itertools import product
 from html_parser import HTMLParser
 from xml_parser import XMLParser
+from html_content_extractor import HTMLContentExtractor
 from datetime import datetime
 from typing import (
     List,
@@ -20,6 +21,7 @@ from typing import (
 class Tool:
     def __init__(self, server: str, api_key: str) -> None:
         self.gi = galaxy.GalaxyInstance(url=server, key=api_key)
+        self.server = server
         self.history_id = ""
         self.tool_id = ""
         self.input_files = []
@@ -46,6 +48,24 @@ class Tool:
         job = self.gi.tools.upload_file(path=file_name, history_id=self.history_id, file_name=new_name)
         job_id = job["jobs"][0]["id"]
         self.gi.jobs.wait_for_job(job_id=job_id)
+    
+    def print_dataset(self):
+        items = self.gi.histories.show_history(self.history_id, contents=True, visible=True)
+        for item in items:
+
+            item_id = item['id']
+            item_name = item['name']
+            item_type = item['type']
+            
+            # Additional information about the dataset can be retrieved using show_dataset
+            
+            #pprint(item)
+            if item_type =="file":
+                dataset_details = self.gi.histories.show_dataset_provenance(history_id=self.history_id, dataset_id=item_id)
+                pprint(item_name)
+                pprint(item_type)
+                #pprint(f"Item ID: {item_id}, Name: {item_name}, Type: {item_type}")
+                print( dataset_details)
 
     # for a given tool, give back the latest version and the id of this tool
     def get_newest_tool_version_and_id(self, tool_name: str):
@@ -156,6 +176,8 @@ class Tool:
                 valid_inputs.append({'src': 'hda', 'id': data_id})
         return valid_inputs
 
+
+
     def run_tool(self, inputs: Dict, combination_test: bool = False):
         job = self.gi.tools.run_tool(
             history_id=self.history_id,
@@ -163,6 +185,17 @@ class Tool:
             tool_inputs=inputs,
             input_format="21.01"
         )
+        """
+        pprint(self.get_tool_input_options_link(self.tool_name))
+        url = self.get_tool_input_options_link(self.tool_name)
+        html_extractor = HTMLContentExtractor()
+        html_extractor.capture_html_content(url)
+        formatted_xml = html_extractor.extract_and_prettify_xml()
+        if formatted_xml:
+            print('Formatted XML:')
+            print(formatted_xml)
+        """
+
 
         job_id = job["jobs"][0]["id"]
 
@@ -219,6 +252,30 @@ class Tool:
 
         # Return the input options as a dictionary
         return input_options
+    
+    def get_tool_input_options_link(self, tool_name):
+        """
+        Retrieve input options for a given tool.
+
+        Args:
+            tool_name (str): The name of the tool.
+
+        Returns:
+            dict: A dictionary containing input options for the specified tool.
+        """
+        # Get the newest tool version and its ID
+        _, tool_id = self.get_newest_tool_version_and_id(tool_name=tool_name)
+
+        # Retrieve tool details using the Galaxy API
+        tool_details = self.gi.tools.show_tool(tool_id, io_details=True, link_details=True)
+
+        # Extract input options from the tool details
+        
+        input_options = tool_details.get('link', {})
+        #pprint(input_options)
+
+        # Return the input options as a dictionary
+        return f"{self.server}{input_options}"
 
     def write_to_file(self, data, name):
         with open(name, 'w') as file:
@@ -328,7 +385,6 @@ class Tool:
             if development_repo_href[-1] != "/"
             else f"{development_repo_href}{self.url_name}.xml"
         )
-
         xml_parser = XMLParser(url=db_url)
         db_data = self.find_values_in_nested_json(xml_parser.prepare_fetch_xml_data(), "rawLines", is_object=False)
         flattened_data = self.flatten(db_data)
@@ -363,11 +419,13 @@ class Tool:
         except ConnectionError as e:
             if "500" in str(e) and "Uncaught exception in exposed API method" in str(e):
                 # Handle the specific ConnectionError with HTTP status code 500 and the specified error message
+                pprint(inputs)
                 print("Caught the specific ConnectionError:")
                 print(f"Exception: {str(e)}")
             else:
                 # Handle other ConnectionError scenarios
                 print("Caught a ConnectionError, but not the specific case:")
+                pprint(inputs)
                 print(f"Exception: {str(e)}")
 
     def get_link(self, tool_name):

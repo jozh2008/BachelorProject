@@ -936,5 +936,943 @@
         "intermediate_temp": null
       }
     }
+  },
+  {
+    "timestamp": "2023-12-11 13:10:06",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-DEMO-3.0.0-12052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-DEMO_diamond-3.0.0-12052021"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 13:22:00",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-DEMO-3.0.0-12052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref50_diamond-3.0.0-13052021"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 13:22:01",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-DEMO-3.0.0-12052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref90_diamond-3.0.0-13052021"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 13:24:12",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-DEMO-3.0.0-12052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref50_ec_filtered_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 13:24:12",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-DEMO-3.0.0-12052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref90_ec_filtered_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 13:59:03",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-DEMO-3.0.0-12052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref50_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:31",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-DEMO-3.0.0-12052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref90_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:31",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-full-3.0.0-13052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-DEMO_diamond-3.0.0-12052021"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:32",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-full-3.0.0-13052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref50_diamond-3.0.0-13052021"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:32",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-full-3.0.0-13052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref90_diamond-3.0.0-13052021"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:32",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-full-3.0.0-13052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref50_ec_filtered_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:33",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-full-3.0.0-13052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref90_ec_filtered_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:33",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-full-3.0.0-13052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref50_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
+  },
+  {
+    "timestamp": "2023-12-11 14:08:34",
+    "error_message": "job has error state",
+    "input": {
+      "in": {
+        "selector": "raw",
+        "__current_case__": 0,
+        "input": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d867652cbe3119a3798a93"
+            }
+          ]
+        }
+      },
+      "wf": {
+        "selector": "bypass_taxonomic_profiling",
+        "__current_case__": 1,
+        "taxonomic_profile": {
+          "values": [
+            {
+              "src": "hda",
+              "id": "4838ba20a6d8676573a6febc5d84f118"
+            }
+          ]
+        },
+        "nucleotide_search": {
+          "nucleotide_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "nucleotide_database": "chocophlan-full-3.0.0-13052021"
+          },
+          "nucleotide_identity_threshold": "0.0",
+          "nucleotide_subject_coverage_threshold": "50.0",
+          "nucleotide_query_coverage_threshold": "90.0"
+        },
+        "translated_search": {
+          "protein_db": {
+            "selector": "cached",
+            "__current_case__": 0,
+            "protein_database": "uniref-uniref90_diamond-3.6.0-29032023"
+          },
+          "evalue": "1.0",
+          "translated_identity_threshold": "",
+          "translated_subject_coverage_threshold": "50.0",
+          "translated_query_coverage_threshold": "90.0"
+        }
+      },
+      "g_p_quant": {
+        "gap_fill": true,
+        "minpath": true,
+        "pathways": "metacyc",
+        "xipe": false,
+        "annotation_gene_index": "3",
+        "id_mapping": null
+      },
+      "out": {
+        "output_basename": "humann",
+        "output_format": "tsv",
+        "output_max_decimals": "10",
+        "remove_column_description_output": false,
+        "remove_stratified_output": false,
+        "intermediate_temp": null
+      }
+    }
   }
 ]

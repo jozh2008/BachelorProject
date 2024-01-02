@@ -8,7 +8,7 @@ import threading
 # which server should be conncted
 server = 'https://usegalaxy.eu/'
 # api kex of account
-api_key = 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
+api_key = f'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
 history_name = "Metatranscriptomics Coding 10"
 
 
@@ -21,7 +21,7 @@ class GalaxyWorkflow:
         self.tools = []
 
     def create_history(self):
-        self.gi.create_history(history_name=self.history_name)
+        #self.gi.create_history(history_name=self.history_name)
         self.gi.get_history_id(history_name=self.history_name)
 
     def get_history(self):
@@ -62,6 +62,9 @@ class GalaxyWorkflow:
         # Wait for all threads to finish
         for thread in threads:
             thread.join()
+    
+    def print_dataset(self):
+        self.gi.print_dataset()
 
     def run_renormalize_tool(self, datasets_to_check):
         re = RenormalizeTool(server=self.server, api_key=self.api_key, history_id=self.gi.history_id)
@@ -78,12 +81,14 @@ def main():
 
     workflow = GalaxyWorkflow(server, api_key, history_name)
     workflow.create_history()
-    workflow.upload_files(file_forward, file_reverse)
-    workflow.define_tools()
-    workflow.run_single(parallel=False)
+    #workflow.upload_files(file_forward, file_reverse)
+    #workflow.define_tools()
+    #workflow.run_single(parallel=False)
+    workflow.print_dataset()
+    
 
-    datasets_to_check = ["Gene families and their abundance", "Pathways and their abundance"]
-    workflow.run_renormalize_tool(datasets_to_check)
+    #datasets_to_check = ["Gene families and their abundance", "Pathways and their abundance"]
+    #workflow.run_renormalize_tool(datasets_to_check)
 
 
 def test_multiple():
@@ -103,10 +108,10 @@ def check_connection(server: str, api_key: str):
 if __name__ == '__main__':
     process1 = multiprocessing.Process(target=main)
     process2 = multiprocessing.Process(target=check_connection, args=[server, api_key])
-    process3 = multiprocessing.Process(target=test_multiple)
+    #process3 = multiprocessing.Process(target=test_multiple)
     process1.start()
     process2.start()
     process1.join()
-    process3.start()
-    process3.join()
+    #process3.start()
+    #process3.join()
     process2.terminate()

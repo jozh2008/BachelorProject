@@ -9,6 +9,7 @@ from itertools import product
 from html_parser import HTMLParser
 from xml_parser import XMLParser
 from html_content_extractor import HTMLContentExtractor
+from galaxy_tool_runner import GalaxyToolRunner
 from datetime import datetime
 from typing import (
     List,
@@ -16,7 +17,6 @@ from typing import (
     Optional,
     Any
 )
-
 
 class Tool:
     def __init__(self, server: str, api_key: str) -> None:
@@ -32,6 +32,7 @@ class Tool:
         self.datatabels_name = []
         self.url_name = ""
         self.job_id = []
+        self.dataset_ids = []
 
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -46,28 +47,114 @@ class Tool:
 
     def upload_file(self, file_name: str, new_name: str | None = None):
         job = self.gi.tools.upload_file(path=file_name, history_id=self.history_id, file_name=new_name)
-        pprint(job)
         job_id = job["jobs"][0]["id"]
+        self.wait_for_job_completion(job_id=job_id)
         self.gi.jobs.wait_for_job(job_id=job_id)
-        
-    
-    def print_dataset(self):
-        items = self.gi.histories.show_history(self.history_id, contents=True, visible=True)
-        for item in items:
+        self.wait_for_job_completion(job_id=job_id)
+        return job["outputs"][0]["id"]
 
-            item_id = item['id']
-            item_name = item['name']
-            item_type = item['type']
+    
+    def workflow_input(self, forward_id, reverse_id):
+        workflow_inputs = {
+            '0': {'src': 'hda', 'id': forward_id},
+            '1': {'src': 'hda', 'id': reverse_id},
+        }
+        return workflow_inputs
+    
+    def run_workflow(self, workflow_inputs):
+        # get all names of de tool_data.josn in a list
+        self.datatabels_name = self.get_names_from_data(self.load_data_from_file(self.file_path))
+        workflow = self.gi.workflows.import_workflow_from_local_path("Workflow/main_workflow.ga")
+        workflow_id = workflow.get("id", {})
+        #print(workflow_id)
+        #print(self.history_id)
+        #pprint(workflow_inputs)
+        #print(123234233)
+        a = self.gi.workflows.invoke_workflow(workflow_id=workflow_id,inputs=workflow_inputs, history_id=self.history_id)
+        #invoke_id = a["id"]
+        #pprint(self.gi.workflows.show_invocation(workflow_id=workflow_id, invocation_id=invoke_id))
+        #pprint(a)
+        return a
+    
+    def delete_dataset_and_datacollection(self):
+        lst = []
+        items = self.gi.histories.show_history(self.history_id, contents=True, deleted=False, visible=True)
+        for item in items:
+            hid = item["hid"]
+            item_type = item["type"]
+            item_id = item["id"]
+            if hid != 1 and hid != 2:
+                if item_type == "file":
+                    self.gi.histories.delete_dataset(history_id=self.history_id, dataset_id=item_id, purge=True)
+                else:
+                    self.gi.histories.delete_dataset_collection(history_id=self.history_id, dataset_collection_id=item_id)
+            else:
+                lst.append(item_id)
+        return lst
+
+
+    
+    def workflow_show_invocation(self, workflow_id):
+        time.sleep(7)
+        lst = []
+        items = self.gi.histories.show_history(self.history_id, contents=True, deleted=False, visible=True)
+        for item in items:
+            if item["type"] == "file":
+                if item["state"] != "ok":
+                    lst.append(item["id"])
+        return lst
             
-            # Additional information about the dataset can be retrieved using show_dataset
-            
-            #pprint(item)
-            if item_type =="file":
-                dataset_details = self.gi.histories.show_dataset_provenance(history_id=self.history_id, dataset_id=item_id)
-                pprint(item_name)
-                pprint(item_type)
-                #pprint(f"Item ID: {item_id}, Name: {item_name}, Type: {item_type}")
-                print( dataset_details)
+    
+    def check_state_workflow(self, input_list):
+        lst = []
+        databases_list = []
+        while input_list:
+            time.sleep(5)
+            try:
+                pprint(len(input_list))
+                for i in input_list:
+                    item = (self.gi.datasets.show_dataset(dataset_id=i))
+                    item_state = item["state"]
+                    if item_state != "ok":
+                        if item_state != "paused" and item_state != "error":
+                            lst.append(i)
+                        #print(item_state)
+                    else:
+                        
+                        gt_runner = GalaxyToolRunner(gi=self.gi, history_id=self.history_id)
+                        tool_id, tool_input = gt_runner.fetch_dataset_details(item=item)
+                        pprint(dict(tool_id=tool_input))
+                        
+                        url_link = (self.get_tool_input_options_link(tool_id=tool_id))
+                        pprint(url_link)
+                        html_extractor = HTMLContentExtractor()
+                        html_extractor.capture_html_content(url=url_link)
+
+                        formatted_xml = html_extractor.extract_and_prettify_xml()
+                        #pprint(formatted_xml)
+                        print(type(formatted_xml))
+                        if "<options from_data_table" in formatted_xml:
+                            ((self.find_databases_in_xml(xml_content=formatted_xml)))
+                        #pprint(self.gi.config.get_version())
+                print("round")
+                input_list = lst
+                lst = []
+            except ConnectionError as e:
+                print(f"Failed to connect to Galaxy: {e}")
+                print("Retrying in 2 seconds...")
+                time.sleep(2)  # Wait for 2 seconds before retrying
+        pprint("finished")
+        
+
+    def find_databases_in_xml(self, xml_content):
+        lst_db = []
+        xml_parser = XMLParser()
+        xml_parser.fetch_xml_data(xml_content=xml_content)
+        for database in self.datatabels_name:
+            #print(database)
+            lst_db.append(xml_parser.find_databases_names(database))
+        result_list = self.remove_duplicate(orginal_list=lst_db)
+        return result_list
 
     # for a given tool, give back the latest version and the id of this tool
     def get_newest_tool_version_and_id(self, tool_name: str):
@@ -133,11 +220,6 @@ class Tool:
         parts = [int(part) for part in re.findall(r'\d+', version)]
         return tuple(parts)
 
-    def get_dataset_names(self):
-        pass
-
-    def get_inputs(self):
-        pass
 
     def run_tool_with_input_files(self, tool_name: str, datasets_name: List[str]):
         self.datatabels_name = self.get_names_from_data(self.load_data_from_file(self.file_path))
@@ -255,7 +337,7 @@ class Tool:
         # Return the input options as a dictionary
         return input_options
     
-    def get_tool_input_options_link(self, tool_name):
+    def get_tool_input_options_link(self, tool_id):
         """
         Retrieve input options for a given tool.
 
@@ -265,16 +347,14 @@ class Tool:
         Returns:
             dict: A dictionary containing input options for the specified tool.
         """
-        # Get the newest tool version and its ID
-        _, tool_id = self.get_newest_tool_version_and_id(tool_name=tool_name)
 
         # Retrieve tool details using the Galaxy API
-        tool_details = self.gi.tools.show_tool(tool_id, io_details=True, link_details=True)
+        tool_details = self.gi.tools.show_tool(tool_id = tool_id, io_details=True, link_details=True)
 
         # Extract input options from the tool details
         
         input_options = tool_details.get('link', {})
-        #pprint(input_options)
+        
 
         # Return the input options as a dictionary
         return f"{self.server}{input_options}"
@@ -794,507 +874,3 @@ class Tool:
                 print("Retrying in 2 seconds...")
                 time.sleep(2)
 
-
-class FastQCTool(Tool):
-
-    def __init__(self, server, api_key, history_id):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.tool_name = "FastQC"
-
-    def get_inputs(self, input_files: List[str]):
-        """
-        Return a dictionary with the correct inputs
-        """
-        input_file_1, input_file_2 = input_files
-        inputs_1 = {
-            'input_file': {
-                'values': input_file_1
-            }
-        }
-        inputs_2 = {
-            'input_file': {
-                'values': input_file_2
-            },
-        }
-        return inputs_1, inputs_2
-
-    def get_dataset_names(self):
-        """
-        names of datsets
-        """
-        return "T1A_forward", "T1A_reverse"
-
-    def run_tool_with_input_files(self, tool_name: str, combination_test: bool = False):
-        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        inputs_1, inputs_2 = self.get_inputs(self.input_files)
-        super().run_tool(inputs=inputs_1)
-        super().run_tool(inputs=inputs_2)
-
-
-class MultiQCTool(Tool):
-    SOFTWARE = "fastqc"
-    KEY_WORD = "software"
-    VALUES = "values"
-
-    def __init__(self, server: str, api_key: str, history_id: str):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.tool_name = "MultiQC"
-        self.input_dict = {}
-
-    def get_inputs(self, input_files: List[str]):
-        inputs = {
-            'results_0|software_cond|software': self.SOFTWARE,
-            'results_0|software_cond|output_0|input': {
-                'values': input_files
-            }
-        }
-        return inputs
-
-    def get_dataset_names(self):
-        return "FastQC on data 1: RawData", "FastQC on data 2: RawData"
-
-    def run_tool_with_input_files(self, tool_name: str, combination_test: bool = False):
-        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        if combination_test:
-            inputs = super().get_combination_test_inputs(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SOFTWARE,
-                updated_dict=self.input_dict,
-                paired=False
-            )
-
-            for input_combination in inputs:
-                try:
-                    super().run_tool(inputs=input_combination, combination_test=True)
-                except Exception as e:
-                    super().handle_error_entry(input_combination, str(e))
-
-            for job_info in self.job_id:
-                completion_status = super().wait_for_job_completion(job_info[0])
-                if completion_status == "error":
-                    super().handle_error_entry(job_info[1], "job has error state")
-
-        else:
-            inputs = super().generate_input_combinations(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SOFTWARE,
-                updated_dict=self.input_dict,
-                paired=False
-            )
-            super().run_tool(inputs=inputs)
-
-
-class CutadaptTool(Tool):
-    LIBRARY_TYPE = 'paired'
-    MINIMUM_LENGTH = '150'
-    QUALITY_CUTOFF = '20'
-    OUTPUT_SELECTOR = 'report'
-    KEY_WORD = "type"
-    VALUES = "values"
-
-    def __init__(self, server: str, api_key: str, history_id: str):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.tool_name = "Cutadapt"
-        self.input_dict = {
-            "minimum_length": self.MINIMUM_LENGTH,
-            "quality_cutoff": self.QUALITY_CUTOFF,
-            "output_selector": self.OUTPUT_SELECTOR
-        }
-
-    def get_inputs(self, inputs_files: List[str]):
-        input_file_1, input_file_2 = inputs_files
-        inputs = {
-            'library|type': self.LIBRARY_TYPE,
-            'library|input_1': {
-                'values': input_file_1
-            },
-            'library|input_2': {
-                'values': input_file_2
-            },
-            'filter_options|minimum_length': self.MINIMUM_LENGTH,
-            'read_mod_options|quality_cutoff': self.QUALITY_CUTOFF,
-            'output_selector': self.OUTPUT_SELECTOR
-        }
-        return inputs
-
-    def get_dataset_names(self):
-        return "T1A_forward", "T1A_reverse"
-
-    def get_new_names_for_dataset(self):
-        return "QC controlled forward reads", "QC controlled reverse reads"
-
-    def get_output_names_of_cutadapt(self):
-        return "Read 1 Output", "Read 2 Output"
-
-    def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
-        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        if combination_test:
-            inputs = super().get_combination_test_inputs(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.LIBRARY_TYPE,
-                updated_dict=self.input_dict
-            )
-
-            for input_combination in inputs:
-                try:
-                    super().run_tool(inputs=input_combination, combination_test=True)
-                except Exception as e:
-                    super().handle_error_entry(input_combination, str(e))
-
-            for job_info in self.job_id:
-                completion_status = super().wait_for_job_completion(job_info[0])
-                if completion_status == "error":
-                    super().handle_error_entry(job_info[1], "job has error state")
-
-        else:
-            inputs = super().generate_input_combinations(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.LIBRARY_TYPE,
-                updated_dict=self.input_dict
-            )
-            super().run_tool(inputs=inputs)
-            super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_cutadapt())
-
-
-class SortMeRNATool(Tool):
-    SEQUEUCING_TYPE_SELECTOR = "paired"
-    DATABASES_SELECTOR = 'cached'
-    PAIRED_TYPE = '--paired_out'
-    ALIGNED_FASTX_OTHER = 'True'
-    LOG = 'True'
-    INPUT_DATABASES = 'input_databases'
-    KEY_WORD = 'sequencing_type_selector'
-    VALUES = "values"
-
-    def __init__(self, server: str, api_key: str, history_id: str):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.tool_name = "Filter with SortMeRNA"
-        self.input_dict = {
-            "log": self.LOG,
-            "other": self.ALIGNED_FASTX_OTHER,
-            "databases_selector": self.DATABASES_SELECTOR,
-            "paired_type": self.PAIRED_TYPE,
-            "input_databases": self.get_datatables(),
-        }
-
-    def get_inputs(self, inputs_files):
-        input_file_1, input_file_2 = inputs_files
-        inputs = {
-            'sequencing_type|sequencing_type_selector': 'paired',
-            'sequencing_type|forward_reads': {
-                'values': input_file_1
-            },
-            'sequencing_type|reverse_reads': {
-                'values': input_file_2
-            },
-            'sequencing_type|paired_type': self.PAIRED_TYPE,
-            'databases_type|databases_selector': self.DATABASES_SELECTOR,
-            'databases_type|input_databases': self.get_datatables(),
-            'aligned_fastx|other': self.ALIGNED_FASTX_OTHER,
-            'log': self.LOG
-        }
-        return inputs
-
-    def get_dataset_names(self):
-        return "QC controlled forward reads", "QC controlled reverse reads"
-
-    def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
-        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        if combination_test:
-            inputs = super().get_combination_test_inputs(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SEQUEUCING_TYPE_SELECTOR,
-                updated_dict=self.input_dict
-            )
-
-            for input_combination in inputs:
-                try:
-                    super().run_tool(inputs=input_combination, combination_test=True)
-                except Exception as e:
-                    super().handle_error_entry(input_combination, str(e))
-
-            for job_info in self.job_id:
-                completion_status = super().wait_for_job_completion(job_info[0])
-                if completion_status == "error":
-                    super().handle_error_entry(job_info[1], "job has error state")
-
-        else:
-            inputs = super().generate_input_combinations(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SEQUEUCING_TYPE_SELECTOR,
-                updated_dict=self.input_dict
-            )
-            super().run_tool(inputs=inputs)
-
-    def get_datatables(self):
-        databases = [
-            '2.1b-rfam-5s-database-id98',
-            '2.1b-silva-arc-23s-id98',
-            '2.1b-silva-euk-28s-id98',
-            '2.1b-silva-bac-23s-id98',
-            '2.1b-silva-euk-18s-id95',
-            '2.1b-silva-bac-16s-id90',
-            '2.1b-rfam-5.8s-database-id98',
-            '2.1b-silva-arc-16s-id95'
-        ]
-        return databases
-
-
-class FASTQinterlacerTool(Tool):
-    VALUES = "values"
-    KEY_WORD = "reads_selector"
-    PAIRED = "paired"
-
-    def __init__(self, server: str, api_key: str, history_id: str):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.tool_name = "FASTQ interlacer"
-        self.input_dict = {}
-
-    def get_inputs(self, inputs_files: List[str]):
-        input_file_1, input_file_2 = inputs_files
-        inputs = {
-            'reads|input1_file': {
-                'values': input_file_1
-            },
-            'reads|input2_file': {
-                'values': input_file_2
-            },
-        }
-        return inputs
-
-    def get_dataset_names(self):
-        return "Unaligned forward reads", "Unaligned reverse reads"
-
-    def get_new_names_for_dataset(self):
-        return ["Interlaced non rRNA reads"]
-
-    def get_output_names_of_interlacer(self):
-        return ["FASTQ interlacer pairs"]
-
-    def run_tool_with_input_files(self, tool_name: str, combination_test: bool = False):
-        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        inputs = super().generate_input_combinations(
-            input_files=self.input_files,
-            filter_keyword=self.KEY_WORD,
-            value=self.VALUES,
-            key=self.PAIRED,
-            updated_dict=self.input_dict
-        )
-        super().run_tool(inputs=inputs)
-        super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_interlacer())
-
-
-class MetaPhlAnTool(Tool):
-    SELECTOR = 'paired'
-    STATE_Q = '0.1'
-    KRONA_OUTPUT = "True"
-    TAX_LEV_SPLIT_LEVELS = "True"
-    DB_SELECTOR = "cached"
-    KEY_WORD = "selector"
-    VALUES = "values"
-
-    def __init__(self, server: str, api_key: str, history_id: str):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.tool_name = "MetaPhlAn"
-        self.input_dict = {
-            "krona_output": self.KRONA_OUTPUT,
-            "stat_q": self.STATE_Q,
-            "db_selector": self.DB_SELECTOR,
-            "split_levels": self.TAX_LEV_SPLIT_LEVELS
-        }
-
-    def get_inputs(self, inputs_files: List[str]):
-        input_file_1, input_file_2 = inputs_files
-        inputs = {
-            'inputs|in|raw_in|selector': self.SELECTOR,
-            'inputs|in|raw_in|in_f': {
-                'values': input_file_1
-            },
-            'inputs|in|raw_in|in_r': {
-                'values': input_file_2
-            },
-            'analysis|analysis_type|tax_lev|split_levels': self.TAX_LEV_SPLIT_LEVELS,
-            'analysis|stat_q': self.STATE_Q,
-            'out|krona_output': self.KRONA_OUTPUT
-        }
-        return inputs
-
-    def get_dataset_names(self):
-        return "QC controlled forward reads", "QC controlled reverse reads"
-
-    def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
-        super().run_tool_with_input_files(tool_name, self.get_dataset_names())
-        if combination_test:
-            inputs = super().get_combination_test_inputs(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SELECTOR,
-                updated_dict=self.input_dict
-            )
-
-            for input_combination in inputs:
-                try:
-                    super().run_tool(inputs=input_combination, combination_test=True)
-                except Exception as e:
-                    super().handle_error_entry(input_combination, str(e))
-
-            for job_info in self.job_id:
-                completion_status = super().wait_for_job_completion(job_info[0])
-                if completion_status == "error":
-                    super().handle_error_entry(job_info[1], "job has error state")
-
-        else:
-            inputs = super().generate_input_combinations(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SELECTOR,
-                updated_dict=self.input_dict
-            )
-            super().run_tool(inputs=inputs)
-
-
-class HUMAnNTool(Tool):
-    SELECTOR = 'bypass_taxonomic_profiling'
-    HUMAnN_NUCLEOTIDE_DATABASE = 'chocophlan-full-3.6.0-29032023'
-    HUMAnN_PROTEIN_DATABASE = 'uniref-uniref90_diamond-3.0.0-13052021'
-    FILE_PATH = "incorrect_database_combination.tsv"
-    KEY_WORD = "selector"
-    VALUES = "values"
-
-    def __init__(self, server: str, api_key: str, history_id: str):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.tool_name = "HUMAnN"
-        self.input_dict = {
-            "nucleotide_database": self.HUMAnN_NUCLEOTIDE_DATABASE,
-            "protein_database": self.HUMAnN_PROTEIN_DATABASE
-
-        }
-
-    def get_inputs(self, inputs_files: List[str], nucleotide_database, protein_database):
-        input_file_1, input_file_2 = inputs_files
-        inputs = {
-            'in|input': {
-                'values': input_file_1
-            },
-            'wf|selector|': self.SELECTOR,
-            'wf|bypass_taxonomic_profiling|--taxonomic-profile': {
-                'values': input_file_2
-            },
-            'wf|nucleotide_search|nucleotide_db|nucleotide_database': nucleotide_database,
-            'wf|translated_search|protein_db|protein_database': protein_database
-        }
-        return inputs
-
-    def get_dataset_names(self):
-        return "Interlaced non rRNA reads", "Predicted taxon relative abundances"
-
-    def get_input_data_ids(self, dataset_names: Optional[str]):
-        dataset_ids = []
-        datasets = self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False)
-        for dataset_name in dataset_names:
-            for dataset in datasets:
-                if (dataset_name in dataset["name"]
-                        and "Krona" not in dataset["name"]
-                        and "taxonomic levels" not in dataset["name"]):
-                    dataset_ids.append(dataset["id"])
-                    print(f"Found dataset '{dataset_name}' with ID: {dataset['id']}")
-
-        return dataset_ids
-
-    def run_tool_with_input_files(self, tool_name, combination_test: bool = False):
-        self.datatabels_name = self.get_names_from_data(self.load_data_from_file(self.file_path))
-        _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
-        input_data_ids = self.get_input_data_ids(self.get_dataset_names())
-        self.input_files = super().get_input_files(input_data_ids)
-        self.my_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id)
-        # run all possible options of the databases
-        if combination_test:
-            inputs = super().get_combination_test_inputs(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SELECTOR,
-                updated_dict=self.input_dict
-            )
-
-            for input_combination in inputs:
-                try:
-                    super().run_tool(inputs=input_combination, combination_test=True)
-                except Exception as e:
-                    super().handle_error_entry(input_combination, str(e))
-
-            for job_info in self.job_id:
-                completion_status = super().wait_for_job_completion(job_info[0])
-                if completion_status == "error":
-                    super().handle_error_entry(job_info[1], "job has error state")
-
-        else:
-            inputs = super().generate_input_combinations(
-                input_files=self.input_files,
-                filter_keyword=self.KEY_WORD,
-                value=self.VALUES,
-                key=self.SELECTOR,
-                updated_dict=self.input_dict
-            )
-            super().run_tool(inputs=inputs)
-
-
-class RenormalizeTool(Tool):
-
-    def __init__(self, server: str, api_key: str, history_id: str):
-        super().__init__(server, api_key)
-        self.history_id = history_id
-        self.pathway_name = ""
-
-    def get_inputs(self, inputs_files: List[str]):
-        input_file_1 = inputs_files
-        inputs = {
-            'input': {
-                'values': input_file_1
-            },
-            'units': 'relab',
-        }
-        return inputs
-
-    def get_dataset_names(self, name: str):
-        self.pathway_name = name
-        return [name]
-
-    def get_new_names_for_dataset(self):
-        name = ""
-        if self.pathway_name == "Gene families and their abundance":
-            name = "Normalized gene families"
-        elif self.pathway_name == "Pathways and their abundance":
-            name = "Normalized pathways"
-        return [name]
-
-    def get_output_names_of_renormalize(self):
-        return ["Renormalize"]
-
-    def run_tool_with_input_files(self, tool_name: str):
-        super().run_tool_with_input_files(tool_name, self.get_dataset_names(self.pathway_name))
-        for input_file in self.input_files:
-            inputs = self.get_inputs(input_file)
-            super().run_tool(inputs=inputs)
-        super().update_dataset_names(self.get_new_names_for_dataset(), self.get_output_names_of_renormalize())

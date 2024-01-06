@@ -4,22 +4,12 @@ from pprint import PrettyPrinter
 
 
 class XMLParser:
-    def __init__(self, url):
-        self.url = url
+    def __init__(self):
         self.root = None
 
-    def prepare_fetch_xml_data(self):
-        response = requests.get(self.url)
-
-        if response.status_code == 200:
-            xml_content = response.json()
-            return xml_content
-        else:
-            print(f"Failed to fetch data. Status code: {response.status_code}")
-            print(self.url)
-
     def fetch_xml_data(self, xml_content):
-        xml_string = '\n'.join(xml_content)
+        # xml_string = '\n'.join(xml_content)
+        xml_string = xml_content
 
         # Parse the XML string
         try:
@@ -57,6 +47,7 @@ class XMLParser:
                     if options_element is not None:
                         from_data_table_value = options_element.get('from_data_table')
                         if from_data_table_value == database_name:
+                            #print(database_name, "fsklfjsldkfjsdlfk")
                             options_list.append((param_element.get("name")))
             except Exception as e:
                 print(f"Error: {e}")

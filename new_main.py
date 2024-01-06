@@ -1,7 +1,7 @@
 # from bioblend import galaxy
 # from pprint import pprint
 # from workflow import *
-from galaxytools import *
+from galaxytools_workflow import *
 import multiprocessing
 import threading
 
@@ -10,7 +10,7 @@ import threading
 server = 'https://usegalaxy.eu/'
 # api kex of account
 api_key = f'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
-history_name = "Metatranscriptomics Coding 12"
+history_name = "Metatranscriptomics Coding 13"
 
 
 class GalaxyWorkflow:
@@ -33,16 +33,26 @@ class GalaxyWorkflow:
         self.input_ids.append(self.gi.upload_file(file_forward, "T1A_forward"))
         self.input_ids.append(self.gi.upload_file(file_reverse, "T1A_reverse"))
 
-    def define_tools(self):
-        self.tools = [
-            FastQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            MultiQCTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            CutadaptTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            SortMeRNATool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            FASTQinterlacerTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            MetaPhlAnTool(server=server, api_key=api_key, history_id=self.gi.history_id),
-            HUMAnNTool(server=server, api_key=api_key, history_id=self.gi.history_id)
-        ]
+    def define_tools(self, file_forward, file_reverse):
+        self.delete_dataset()
+        if not self.input_ids:
+            self.upload_files(file_forward, file_reverse)
+        forward_id, reverse_id = self.input_ids
+        workflow_ids = self.gi.workflow_input(forward_id=forward_id, reverse_id=reverse_id)
+        a = self.gi.run_workflow(workflow_inputs=workflow_ids)
+        pprint(a)
+    
+    def show_invocation(self, worfklow_id):
+        z = self.gi.workflow_show_invocation(workflow_id=worfklow_id)
+        pprint(len(z))
+        pprint(z)
+        self.gi.check_state_workflow(z)
+    
+    def delete_dataset(self):
+        self.input_ids = self.gi.delete_dataset_and_datacollection()
+
+
+
 
     def run_tools(self, tool, parallel):
         # Modify the run_tools method to take the tool and parallel flag
@@ -65,14 +75,6 @@ class GalaxyWorkflow:
         for thread in threads:
             thread.join()
     
-    def print_dataset(self):
-        self.gi.print_dataset()
-
-    def run_renormalize_tool(self, datasets_to_check):
-        re = RenormalizeTool(server=self.server, api_key=self.api_key, history_id=self.gi.history_id)
-        for dataset in datasets_to_check:
-            re.get_dataset_names(dataset)
-            re.run_tool_with_input_files("Renormalize")
 
 
 def main():
@@ -82,10 +84,16 @@ def main():
     # file_reverse = "Upload_files/T1A_reverse.fastqsanger"
 
     workflow = GalaxyWorkflow(server, api_key, history_name)
-    workflow.create_history()
-    workflow.upload_files(file_forward, file_reverse)
-    workflow.define_tools()
-    workflow.run_single(parallel=False)
+    #workflow.create_history()
+    workflow.get_history()
+    
+    #workflow.upload_files(file_forward, file_reverse)
+    #workflow.define_tools()
+    #workflow.show_invocation("a1c8530242a0767b")
+    #workflow.delete_dataset()
+    workflow.define_tools(file_forward=file_forward, file_reverse=file_reverse)
+    workflow.show_invocation("a1c8530242a0767b")
+    #workflow.run_single(parallel=False)
     #workflow.print_dataset()
     
 

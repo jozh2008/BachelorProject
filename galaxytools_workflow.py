@@ -24,10 +24,12 @@ class Tool:
         self.server = server
         self.history_id = ""
         self.tool_id = ""
+        self.tool_name = ""
         self.input_files = []
         self.json_input = []
         self.my_dict = {}
         self.my_dict2 = {}
+        self.my_dict3 = {}
         self.file_path = "tool_data.json"
         self.datatabels_name = []
         self.url_name = ""
@@ -74,6 +76,7 @@ class Tool:
         #invoke_id = a["id"]
         #pprint(self.gi.workflows.show_invocation(workflow_id=workflow_id, invocation_id=invoke_id))
         #pprint(a)
+        time.sleep(4)
         return a
     
     def delete_dataset_and_datacollection(self):
@@ -107,12 +110,12 @@ class Tool:
     
     def check_state_workflow(self, input_list):
         lst = []
-        databases_list = []
         while input_list:
             time.sleep(5)
             try:
                 pprint(len(input_list))
                 for i in input_list:
+                    #print(i)
                     item = (self.gi.datasets.show_dataset(dataset_id=i))
                     item_state = item["state"]
                     if item_state != "ok":
@@ -123,26 +126,59 @@ class Tool:
                         
                         gt_runner = GalaxyToolRunner(gi=self.gi, history_id=self.history_id)
                         tool_id, tool_input = gt_runner.fetch_dataset_details(item=item)
-                        pprint(dict(tool_id=tool_input))
-                        
-                        url_link = (self.get_tool_input_options_link(tool_id=tool_id))
-                        pprint(url_link)
-                        html_extractor = HTMLContentExtractor()
-                        html_extractor.capture_html_content(url=url_link)
+                        #self.my_dict3[tool_input]
+    
+                        if tool_id not in self.my_dict2:
+                            #mydictionary = {tool_id: tool_input}
+                            self.my_dict2[tool_id] = tool_input
+                            pprint(self.my_dict2)
+                            
+                            url_link = (self.get_tool_input_options_link(tool_id=tool_id))
+                            pprint(url_link)
+                            html_extractor = HTMLContentExtractor()
+                            html_extractor.capture_html_content(url=url_link)
 
-                        formatted_xml = html_extractor.extract_and_prettify_xml()
-                        #pprint(formatted_xml)
-                        print(type(formatted_xml))
-                        if "<options from_data_table" in formatted_xml:
-                            ((self.find_databases_in_xml(xml_content=formatted_xml)))
-                        #pprint(self.gi.config.get_version())
+                            formatted_xml = html_extractor.extract_and_prettify_xml()
+                            #pprint(formatted_xml)
+                            print(type(formatted_xml))
+                            if "<options from_data_table" in formatted_xml:
+                                #pprint((self.find_databases_in_xml(xml_content=formatted_xml)))
+                                lst2 = ((self.remove_duplicate(self.find_databases_in_xml(xml_content=formatted_xml))))
+                                inputs_options = (self.get_tool_input_options(tool_id=tool_id))
+                                dictionary, multiple_list = self.process_data(lst2, inputs_options=inputs_options)
+                                multiple_list = self.remove_duplicate(multiple_list)
+                                all_combinations = self.generate_combinations(dictionary=dictionary, exclude_keys=multiple_list)
+                                #pprint(dictionary)
+                                #pprint(multiple_list)
+                                #pprint(all_combinations)
+                                input_list = [self.update_keys(tool_input.copy(), combination) for combination in all_combinations]
+                                job_id_list = []
+                                #pprint(input_list)
+                                for inp in input_list:
+                                    try:
+                                        job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inp, input_format="21.01")
+                                        job_id = job["jobs"][0]["id"]
+                                        job_id_list.append([job_id, inp])
+                                        
+
+                                    except Exception as e:
+                                        self.handle_error_entry(inp, str(e))
+                                
+                                for job_info in job_id_list:
+                                    completion_status = self.wait_for_job_completion(job_info[0])
+                                    if completion_status == "error":
+                                        self.handle_error_entry(job_info[1], "job has error state")
+                                    
                 print("round")
                 input_list = lst
                 lst = []
+            
             except ConnectionError as e:
                 print(f"Failed to connect to Galaxy: {e}")
                 print("Retrying in 2 seconds...")
                 time.sleep(2)  # Wait for 2 seconds before retrying
+            
+            
         pprint("finished")
         
 
@@ -153,7 +189,7 @@ class Tool:
         for database in self.datatabels_name:
             #print(database)
             lst_db.append(xml_parser.find_databases_names(database))
-        result_list = self.remove_duplicate(orginal_list=lst_db)
+        result_list = self.flatten(self.remove_duplicate(orginal_list=lst_db))
         return result_list
 
     # for a given tool, give back the latest version and the id of this tool
@@ -221,83 +257,9 @@ class Tool:
         return tuple(parts)
 
 
-    def run_tool_with_input_files(self, tool_name: str, datasets_name: List[str]):
-        self.datatabels_name = self.get_names_from_data(self.load_data_from_file(self.file_path))
-        _, self.tool_id = self.get_newest_tool_version_and_id(tool_name)
-        self.my_dict = self.build_input_states(tool_id=self.tool_id, history_id=self.history_id)
-        input_data_ids = self.get_input_data_ids(datasets_name)
-        self.input_files = self.get_input_files(input_data_ids)
-
-    def get_input_data_ids(self, dataset_names: List[str]):
-        # get the dataset_ids in a list given the names of the datasets
-        dataset_ids = []
-        datasets = self.gi.datasets.get_datasets(history_id=self.history_id, deleted=False)
-        # check for every dataset_name in datasets if this name is valid, if so
-        # add it to dataset_id list
-        for dataset_name in dataset_names:
-            for dataset in datasets:
-                if dataset_name in dataset["name"]:
-                    dataset_ids.append(dataset["id"])
-                    print(f"Found dataset '{dataset_name}' with ID: {dataset['id']}")
-
-        return dataset_ids
-
-    def get_input_files(self, input_data_ids: List[str]):
-        """
-        return list with input_file format of the datasets
-        which has no errors
-        input_files = [
-            {
-                'src': 'hda',
-                'id': input_data_id_1  # Replace with the actual input data ID
-            }
-        ]
-        """
-        valid_inputs = []
-        for data_id in input_data_ids:
-            dataset_info = self.gi.datasets.show_dataset(data_id)
-            if dataset_info.get('state') != 'error':
-                valid_inputs.append({'src': 'hda', 'id': data_id})
-        return valid_inputs
 
 
-
-    def run_tool(self, inputs: Dict, combination_test: bool = False):
-        job = self.gi.tools.run_tool(
-            history_id=self.history_id,
-            tool_id=self.tool_id,
-            tool_inputs=inputs,
-            input_format="21.01"
-        )
-        """
-        pprint(self.get_tool_input_options_link(self.tool_name))
-        url = self.get_tool_input_options_link(self.tool_name)
-        html_extractor = HTMLContentExtractor()
-        html_extractor.capture_html_content(url)
-        formatted_xml = html_extractor.extract_and_prettify_xml()
-        if formatted_xml:
-            print('Formatted XML:')
-            print(formatted_xml)
-        """
-
-
-        job_id = job["jobs"][0]["id"]
-
-        if combination_test:
-            self.job_id.append([job_id, inputs])
-        else:
-            self.wait_for_job(job_id)
-            print(f"Tool '{self.tool_id}' has finished processing with job ID: {job_id}")
-
-    def update_dataset_names(self, update_names, old_names):
-        """
-        Update the odd dataset names with the new names
-        """
-        input_data_ids = self.get_input_data_ids(old_names)
-        for data_id, new_name in zip(input_data_ids, update_names):
-            self.gi.histories.update_dataset(history_id=self.history_id, dataset_id=data_id, name=new_name)
-
-    def get_tool_input_options(self, tool_name):
+    def get_tool_input_options(self, tool_id):
         """
         Get detailed input options for a specified tool.
 
@@ -307,10 +269,8 @@ class Tool:
         Returns:
         - input_options: Detailed input options for the tool.
         """
-        # Get the newest version and ID of the tool
-        _, tool_id = self.get_newest_tool_version_and_id(tool_name)
         # Show the tool with detailed input and output options
-        tool_details = self.gi.tools.show_tool(tool_id, io_details=True)
+        tool_details = self.gi.tools.show_tool(tool_id=tool_id, io_details=True)
         # Extract detailed input options
         input_options = tool_details.get('inputs', {})
         return input_options
@@ -355,6 +315,7 @@ class Tool:
         
         input_options = tool_details.get('link', {})
         
+        self.tool_name = tool_details.get('name',{})
 
         # Return the input options as a dictionary
         return f"{self.server}{input_options}"
@@ -457,35 +418,6 @@ class Tool:
                 self.extract_keys_with_path(item, current_path, keys)
         return keys
 
-    def get_databases_name(self, database_names):
-        base_url = self.get_link(self.tool_name)
-        development_repo_href = HTMLParser(self.process_iframe_url(base_url)).find_development_repository_href()
-        databases_list = []
-        # for db_name in self.fetch_database_names(development_repo_href):
-        db_url = (
-            f"{development_repo_href}/{self.url_name}.xml"
-            if development_repo_href[-1] != "/"
-            else f"{development_repo_href}{self.url_name}.xml"
-        )
-        xml_parser = XMLParser(url=db_url)
-        db_data = self.find_values_in_nested_json(xml_parser.prepare_fetch_xml_data(), "rawLines", is_object=False)
-        flattened_data = self.flatten(db_data)
-
-        if flattened_data:
-            xml_parser.fetch_xml_data(flattened_data)
-            databases_list.append(xml_parser.find_databases_names(database_names))
-
-        unique_databases = self.remove_duplicate(self.flatten(databases_list))
-
-        return unique_databases
-
-    def fetch_database_names(self, development_repo_href):
-        url_parser = HTMLParser(url=development_repo_href)
-        data = url_parser.get_github_resource()
-        xml_files = self.find_values_in_nested_json(data, ".xml", is_object=False)
-
-        for xml_file in xml_files:
-            yield xml_file
 
     def update_keys(self, original, updated):
         for key, value in updated.items():
@@ -697,7 +629,7 @@ class Tool:
         if original_state_dict is None:
             return []
         # Store the original dictionary in my_dict2
-        self.my_dict2 = original_state_dict
+        self.my_dict3 = original_state_dict
         # Update the original dictionary with input_files using the update_values method
         updated_state_dict = self.update_values(original_state_dict, value, inputs, paired)
         dict_updated = (self.update_keys(updated_state_dict.copy(), updated_dict))

@@ -187,18 +187,6 @@ class Tool:
             tool_inputs=inputs,
             input_format="21.01"
         )
-        """
-        pprint(self.get_tool_input_options_link(self.tool_name))
-        url = self.get_tool_input_options_link(self.tool_name)
-        html_extractor = HTMLContentExtractor()
-        html_extractor.capture_html_content(url)
-        formatted_xml = html_extractor.extract_and_prettify_xml()
-        if formatted_xml:
-            print('Formatted XML:')
-            print(formatted_xml)
-        """
-
-
         job_id = job["jobs"][0]["id"]
 
         if combination_test:

@@ -9,8 +9,8 @@ import threading
 # which server should be conncted
 server = 'https://usegalaxy.eu/'
 # api kex of account
-api_key = f'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
-history_name = "Metatranscriptomics Coding 13"
+api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+history_name = "Metatranscriptomics Coding 15"
 
 
 class GalaxyWorkflow:

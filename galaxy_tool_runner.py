@@ -9,7 +9,6 @@ class GalaxyToolRunner:
 
     def fetch_dataset_details(self, item):
         item_type = item['type']
-        item_name = item['name']
 
         if item_type == "file":
             item_id = item['id']

@@ -1,0 +1,16 @@
+files:
+  - url: "https://zenodo.org/record/4776250/files/T1A_forward.fastqsanger"
+    destination_folder: "Upload_2"
+    rename_to: "T1A_forward"
+
+  - url: "https://zenodo.org/record/4776250/files/T1A_reverse.fastqsanger"
+    destination_folder: "Upload_2"
+    rename_to: "T1A_reverse"
+
+workflow:
+  url: "https://training.galaxyproject.org/training-material/topics/metagenomics/tutorials/metatranscriptomics/workflows/main_workflow.ga"
+  destination_folder: "Workflow"
+
+server: 'https://usegalaxy.eu/'
+api_key: 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
+history_name: 'Test Metatranscriptomic Workflow'

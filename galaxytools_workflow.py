@@ -1,6 +1,6 @@
 from bioblend import galaxy
 from bioblend import ConnectionError
-from pprint import pprint, PrettyPrinter
+from pprint import pprint
 import threading
 import time
 import json
@@ -13,16 +13,14 @@ from datetime import datetime
 from typing import (
     List,
     Dict,
-    Optional,
-    Any
 )
+
 
 class Tool:
     def __init__(self, server: str, api_key: str) -> None:
         self.gi = galaxy.GalaxyInstance(url=server, key=api_key)
         self.server = server
         self.history_id = ""
-        self.tool_name = ""
         self.json_input = []
         self.my_dict = {}
         self.file_path = "tool_data.json"
@@ -43,7 +41,8 @@ class Tool:
         """
         Upload a file to Galaxy and wait for the completion of the upload job.
 
-        This function uploads a file to a Galaxy history, monitors the upload job's completion, and returns the ID of the uploaded dataset.
+        This function uploads a file to a Galaxy history, monitors the upload job's completion,
+        and returns the ID of the uploaded dataset.
 
         Parameters:
         - file_name (str): The name of the file to upload.
@@ -63,8 +62,7 @@ class Tool:
 
         return job["outputs"][0]["id"]
 
-    
-    def workflow_input(self, forward_id, reverse_id):
+    def workflow_input(self, forward_id: str, reverse_id: str):
         """
         Create input specifications for a Galaxy workflow using forward and reverse dataset IDs.
 
@@ -85,8 +83,8 @@ class Tool:
         }
 
         return workflow_inputs
-    
-    def run_workflow(self, workflow_inputs: Dict):
+
+    def run_workflow(self, workflow_inputs: Dict, file_workflow: str):
         """
         Run a Galaxy workflow with the provided inputs.
 
@@ -102,21 +100,45 @@ class Tool:
         """
 
         # Get names of data tables from tool_data.json and store in a list
-        self.datatables_name = self.get_names_from_data(self.load_data_from_file(self.file_path))
-        print(self.datatables_name)
+        self.datatables_name = self.get_names_from_data(data=self.load_data_from_file(file_path=self.file_path))
 
         # Import the workflow from a local path
-        workflow = self.gi.workflows.import_workflow_from_local_path("Workflow/main_workflow.ga")
+        workflow = self.gi.workflows.import_workflow_from_local_path(file_local_path=file_workflow)
         workflow_id = workflow.get("id", {})
 
         # Invoke the workflow with provided inputs
-        workflow_result = self.gi.workflows.invoke_workflow(workflow_id=workflow_id, inputs=workflow_inputs, history_id=self.history_id)
+        workflow_result = self.gi.workflows.invoke_workflow(
+            workflow_id=workflow_id,
+            inputs=workflow_inputs,
+            history_id=self.history_id
+        )
 
-        # Allow time for the workflow to complete
-        time.sleep(4)
+        invocation_id = workflow_result.get("id", {})
+
+        workflow_result = self.wait_for_workflow(workflow_id=workflow_id, invocation_id=invocation_id)
 
         return workflow_result
-    
+
+    def wait_for_workflow(self, workflow_id: str, invocation_id: str):
+        """
+        Wait for the completion of a specific workflow invocation.
+
+        This method continuously checks the state of the workflow invocation until it is no longer in the 'new' state.
+        It sleeps for 5 seconds between each check.
+
+        Args:
+            workflow_id (str): The ID of the workflow.
+            invocation_id (str): The ID of the workflow invocation.
+
+        Returns:
+            dict: Information about the workflow invocation once it's no longer in the 'new' state.
+        """
+        while True:
+            workflow_invocation_info = self.gi.workflows.show_invocation(workflow_id=workflow_id, invocation_id=invocation_id)
+            if workflow_invocation_info['state'] not in {'new'}:
+                return workflow_invocation_info
+            time.sleep(5)
+
     def delete_dataset_and_datacollection(self):
         """
         Delete datasets and dataset collections from a Galaxy history, excluding certain predefined histories.
@@ -135,7 +157,7 @@ class Tool:
         excluded_history_ids = [1, 2]
         excluded_item_ids = []
 
-        items = self.gi.histories.show_history(self.history_id, contents=True, deleted=False, visible=True)
+        items = self.gi.histories.show_history(history_id=self.history_id, contents=True, deleted=False, visible=True)
 
         for item in items:
             hid = item["hid"]
@@ -156,9 +178,7 @@ class Tool:
         """
         Get a list of file IDs in the current Galaxy history that are not in a 'ok' state.
 
-        This function waits for 7 seconds to ensure that the workflow invocation is completed
-        before fetching the files' information from the history. It then compiles a list of file IDs
-        that are not in an 'ok' state.
+        This function compiles a list of file IDs that are not in an 'ok' state in the current Galaxy history
 
         Parameters:
         - workflow_id (str): The ID of the workflow.
@@ -167,14 +187,12 @@ class Tool:
         - List of file IDs that are not in an 'ok' state in the current Galaxy history.
         """
 
-        # Wait for 7 seconds to ensure workflow invocation completion
-        time.sleep(7)
-
         # Initialize an empty list to store file IDs
         problematic_file_ids = []
 
         # Retrieve items in the current Galaxy history
-        items = self.gi.histories.show_history(self.history_id, contents=True, deleted=False, visible=True)
+        items = self.gi.histories.show_history(history_id=self.history_id, contents=True, deleted=False, visible=True)
+        print(len(items))
 
         # Iterate through items and identify files not in 'ok' state
         for item in items:
@@ -191,34 +209,34 @@ class Tool:
             try:
                 pprint((current_length))
                 for i in input_list:
-                    #print(i)
                     item = (self.gi.datasets.show_dataset(dataset_id=i))
                     item_state = item["state"]
-                    item_name = item["name"]
                     if item_state != "ok":
                         if item_state != "paused" and item_state != "error":
                             lst.append(i)
-                        #print(item_state)
                     else:
-                        
+
                         gt_runner = GalaxyToolRunner(gi=self.gi, history_id=self.history_id)
                         tool_id, tool_input = gt_runner.fetch_dataset_details(item=item)
-    
+
                         if tool_id not in self.my_dict:
-                            #mydictionary = {tool_id: tool_input}
                             self.my_dict[tool_id] = tool_input
                             pprint(self.my_dict)
-                            
+
                             url_link = (self.get_tool_input_options_link(tool_id=tool_id))
+                            tool_name = self.get_tool_input_options_name(tool_id=tool_id)
+                            pprint(tool_name)
                             pprint(url_link)
                             html_extractor = HTMLContentExtractor()
                             html_extractor.capture_html_content(url=url_link)
 
                             formatted_xml = html_extractor.extract_and_prettify_xml()
-                            #pprint(formatted_xml)
-                            
+
                             if "<options from_data_table" in formatted_xml:
-                                thread = threading.Thread(target=self.run_tool_multithreaded, args=(formatted_xml, tool_id, tool_input, item_name))
+                                thread = threading.Thread(
+                                    target=self.run_tool_multithreaded,
+                                    args=(formatted_xml, tool_id, tool_input, tool_name)
+                                )
                                 thread.start()
 
             except ConnectionError as e:
@@ -227,43 +245,77 @@ class Tool:
                 print("workflow_connection")
                 time.sleep(2)  # Wait for 2 seconds before retrying
                 lst = self.workflow_show_invocation()
+                print(len(lst), "after exception in workflow_connection")
             finally:
                 # Update input_list to the remaining items after the loop
                 print("round", len(lst))
                 input_list = lst
                 lst = []
 
-            
-            
         pprint("finished")
         thread.join()
-   
-    def run_tool_multithreaded(self, formatted_xml, tool_id, tool_input,item_name):
-    
-        lst2 = self.remove_duplicate(self.find_databases_in_xml(xml_content=formatted_xml))
-        #pprint(lst2)
+
+    def run_tool_multithreaded(self, formatted_xml: str, tool_id: str, tool_input, tool_name: str):
+        """
+        Run a tool with multiple combinations of inputs in a multithreaded manner.
+
+        Args:
+            formatted_xml (str): The formatted XML content.
+            tool_id (str): The ID of the tool to be executed.
+            tool_input: The initial tool input.
+            tool_name (str): The name of the tool.
+
+        Returns:
+            None
+        """
+        # Extract databases and process input options
+        unique_databases = self.remove_duplicate(self.find_databases_in_xml(xml_content=formatted_xml))
         inputs_options = self.get_tool_input_options(tool_id=tool_id)
-        #pprint(inputs_options)
-        dictionary, multiple_list = self.process_data(lst2, inputs_options=inputs_options)
+        dictionary, multiple_list = self.process_data(unique_databases, inputs_options=inputs_options)
         multiple_list = self.remove_duplicate(multiple_list)
+
+        # Generate combinations of inputs
         all_combinations = self.generate_combinations(dictionary=dictionary, exclude_keys=multiple_list)
         input_list = [self.update_keys(tool_input.copy(), combination) for combination in all_combinations]
-        print(len(input_list))
+
+        # Display total combinations
+        print(f'Total combinations for {tool_name}: {len(input_list)}')
+
+        # Execute tool with each combination
         job_id_list = []
         for inp in input_list:
+            updated_input = self.update_values(dic=inp, key="id", new_values="Test ids 3")
+            updated_input = self.update_values(
+                dic=updated_input,
+                key="__workflow_invocation_uuid__",
+                new_values="Test workflow_invocation-uuid 3"
+            )
+
             try:
-                job = self.gi.tools.run_tool(history_id=self.history_id, tool_id=tool_id, tool_inputs=inp, input_format="21.01")
+                # Run tool and get job information
+                job = self.gi.tools.run_tool(
+                    history_id=self.history_id,
+                    tool_id=tool_id,
+                    tool_inputs=inp,
+                    input_format="21.01"
+                )
                 job_id = job["jobs"][0]["id"]
-                job_id_list.append([job_id, inp])
+                job_id_list.append([job_id, updated_input])
 
             except Exception as e:
-                self.handle_error_entry(inp, str(e))
-
+                # Handle tool execution exception
+                print(tool_name, "Exception")
+                self.handle_error_entry(entry=updated_input, error_message=str(e), tool_name=tool_name)
+        # Wait for job completion and handle errors
         for job_info in job_id_list:
             completion_status = self.wait_for_job_completion(job_info[0])
-            print(item_name, completion_status)
+            print(tool_name, completion_status)
             if completion_status == "error":
-                self.handle_error_entry(entry=job_info[1],tool_name=item_name,error_message= f"job has {completion_status} state")
+                self.handle_error_entry(
+                    entry=job_info[1],
+                    tool_name=tool_name,
+                    error_message=f"Job has {completion_status} state"
+                )
 
     def find_databases_in_xml(self, xml_content):
         """
@@ -314,7 +366,6 @@ class Tool:
 
         # Query Galaxy server for histories with the given name
         histories = self.gi.histories.get_histories(name=history_name)
-        pprint(histories)
 
         # Check if any history with the provided name was found
         if not histories:
@@ -331,35 +382,6 @@ class Tool:
         # Return the retrieved history_id
         return history_id
 
-    def create_history(self, history_name: str):
-        """
-        Create a new Galaxy history or retrieve an existing one with the given name.
-
-        This function checks if a history with the provided name already exists on the Galaxy server.
-        If it does, the existing history is deleted, and a new one is created. If it doesn't exist,
-        a new history is created with the provided name. The resulting history_id is stored in the class instance.
-
-        Parameters:
-        - history_name (str): The name of the history to create or retrieve.
-
-        Returns:
-        None
-        """
-
-        # Query Galaxy server for existing histories
-        histories = self.gi.histories.get_histories()
-
-        # Check if a history with the provided name already exists
-        if histories and histories[0]["name"] == history_name:
-            # Delete the existing history if found
-            self.gi.histories.delete_history(histories[0]["id"])
-
-        # Create a new history with the provided name
-        history = self.gi.histories.create_history(history_name)
-
-        # Store the new history_id in the class instance
-        self.history_id = history["id"]
-
     # wait until job is done, cause tools are dependent of each other
     def wait_for_job(self, job_id: str):
         try:
@@ -372,7 +394,7 @@ class Tool:
         Get detailed input options for a specified tool.
 
         Parameters:
-        - tool_name: The name of the tool.
+        - tool_id: The id of the tool.
 
         Returns:
         - input_options: Detailed input options for the tool.
@@ -385,26 +407,43 @@ class Tool:
 
     def get_tool_input_options_link(self, tool_id):
         """
-        Retrieve input options for a given tool.
+        Retrieve the link details for input options of a given tool.
+
+        This method fetches the link details for input options from the Galaxy API based on the tool ID.
 
         Args:
-            tool_name (str): The name of the tool.
+            tool_id (str): The ID of the tool.
 
         Returns:
-            dict: A dictionary containing input options for the specified tool.
+            str: The link details for input options.
         """
 
         # Retrieve tool details using the Galaxy API
-        tool_details = self.gi.tools.show_tool(tool_id = tool_id, io_details=True, link_details=True)
+        tool_details = self.gi.tools.show_tool(tool_id=tool_id, io_details=True, link_details=True)
 
-        # Extract input options from the tool details
-        
-        input_options = tool_details.get('link', {})
-        
-        self.tool_name = tool_details.get('name',{})
+        # Extract input options link from the tool details
+        input_options_link = tool_details.get('link', {})
 
-        # Return the input options as a dictionary
-        return f"{self.server}{input_options}"
+        # Return the input options link as a string
+        return f"{self.server}{input_options_link}"
+
+    def get_tool_input_options_name(self, tool_id):
+        """
+        Retrieve the name of a tool and its input options using the Galaxy API.
+
+        Args:
+            tool_id (str): The ID of the tool.
+
+        Returns:
+            str: The name of the tool.
+        """
+        # Retrieve tool details using the Galaxy API
+        tool_details = self.gi.tools.show_tool(tool_id=tool_id, io_details=True, link_details=True)
+
+        # Extract the name of the tool
+        tool_name = tool_details.get('name', {})
+
+        return tool_name
 
     def get_databases(self, inputs):
         """
@@ -531,7 +570,7 @@ class Tool:
 
         return result_dict, multiple_values
 
-    def update_values(self, dic, key, new_values, paired: bool = False):
+    def update_values(self, dic, key, new_values):
         """
         Recursively updates values in a nested dictionary based on a specified key.
 
@@ -552,10 +591,7 @@ class Tool:
                     if isinstance(v_inner, (dict, list)):
                         recursion(v_inner, k, new_val)
                     if k_inner == k:
-                        if isinstance(new_val, (list, tuple)) and paired:
-                            d[k_inner] = [new_val.pop(0)] if new_val else None
-                        else:
-                            d[k_inner] = new_val
+                        d[k_inner] = new_val
             elif isinstance(d, list):
                 for item in d:
                     recursion(item, k, new_val)
@@ -611,7 +647,7 @@ class Tool:
         found_values = recursive_search(json_object, result_values, target_key)
         return found_values
 
-    def flatten(self, nested_list):
+    def flatten(self, nested_list: List):
         """
         Flatten a nested list recursively.
 
@@ -635,8 +671,19 @@ class Tool:
 
         return flat_list
 
+    def load_data_from_file(self, file_path: str):
+        """
+        Load data from a JSON file.
 
-    def load_data_from_file(self, file_path):
+        This method reads the content of a JSON file located at the specified file path
+        and returns the loaded data as a Python object.
+
+        Args:
+            file_path (str): The path to the JSON file.
+
+        Returns:
+            dict or list: The loaded data from the JSON file.
+        """
         with open(file_path, 'r') as file:
             loaded_data = json.load(file)
 
@@ -658,8 +705,20 @@ class Tool:
 
         return [entry['name'] for entry in data]
 
-
     def generate_combinations(self, dictionary: Dict, exclude_keys: List):
+        """
+        Generate combinations of key-value pairs from a dictionary, excluding specified keys.
+
+        This method takes a dictionary and a list of keys to exclude. It generates combinations
+        of key-value pairs from the remaining keys in the dictionary after excluding the specified keys.
+
+        Args:
+            dictionary (dict): The original dictionary to generate combinations from.
+            exclude_keys (list): The list of keys to exclude from the combinations.
+
+        Returns:
+            list: A list of dictionaries representing different combinations of key-value pairs.
+        """
         # Prepare an empty dictionary to store the excluded key-value pairs
         excluded_dict = {}
 
@@ -679,14 +738,42 @@ class Tool:
         # Return the final list of combinations
         return all_combinations
 
-    def is_entry_present(self, data, entry):
+    def is_entry_present(self, data: List, entry: Dict):
+        """
+        Check if a specific entry is present in a list of dictionaries, ignoring the timestamp.
+
+        This method iterates through a list of dictionaries and checks if the 'input' key
+        in any dictionary matches the provided entry, ignoring the timestamp.
+
+        Args:
+            data (list): A list of dictionaries.
+            entry: The entry to check for in the 'input' key.
+
+        Returns:
+            bool: True if the entry is present (ignoring timestamp), False otherwise.
+        """
         # Check if the entry is present (ignoring timestamp)
         for i in data:
             if i.get("input") == entry:
                 return True
         return False
 
-    def add_entry_to_json(self, entry, file_path, error_message):
+    def add_entry_to_json(self, entry: Dict, file_path: str, error_message: str):
+        """
+        Add an entry to a JSON file, handling the presence of the entry and updating timestamps.
+
+        This method loads existing JSON data from the specified file, checks if the provided entry
+        is already present (ignoring timestamp), and adds the entry with a new timestamp and error message
+        if it's not present. If the file doesn't exist, it initializes an empty list and adds the entry.
+
+        Args:
+            entry: The entry to be added to the JSON file.
+            file_path (str): The path to the JSON file.
+            error_message (str): The error message associated with the entry.
+
+        Returns:
+            None
+        """
         # Load existing JSON data
         try:
             with open(file_path, 'r') as json_file:
@@ -696,8 +783,8 @@ class Tool:
             data = []
 
         # Check if the entry is already present (ignoring timestamp)
-        if not self.is_entry_present(data, entry):
-            # Add the entry to the data
+        if not self.is_entry_present(data=data, entry=entry):
+            # Add the entry to the data with a new timestamp
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             data_entry = {
                 "timestamp": timestamp,
@@ -713,7 +800,22 @@ class Tool:
             with open(file_path, 'w') as json_file:
                 json.dump(data, json_file, indent=2)
 
-    def handle_error_entry(self,tool_name: str, entry, error_message: str):
+    def handle_error_entry(self, tool_name: str, entry, error_message: str):
+        """
+        Handle an error entry for a specific tool by adding it to a tool-specific JSON file.
+
+        This method generates a tool-specific JSON file path based on the tool name, and then
+        calls the 'add_entry_to_json' method to add the provided entry along with the error message
+        to the JSON file. If the file doesn't exist, it initializes an empty list and adds the entry.
+
+        Args:
+            tool_name (str): The name of the tool associated with the error entry.
+            entry: The entry to be added to the JSON file.
+            error_message (str): The error message associated with the entry.
+
+        Returns:
+            None
+        """
         file_path = f'{tool_name}_incorrect_combination.json'
         self.add_entry_to_json(entry=entry, file_path=file_path, error_message=error_message)
 
@@ -733,7 +835,8 @@ class Tool:
         while True:
             try:
                 job_info = self.gi.jobs.show_job(job_id)
-                #print(job_info["state"], 1)
+                print(job_info)
+                print(self.gi.jobs.wait_for_job(job_id=job_id, interval=5, check=True))
 
                 if job_info['state'] not in {'queued', 'running', 'new'}:
                     return job_info['state']
@@ -743,5 +846,5 @@ class Tool:
             except ConnectionError as e:
                 print(f"Failed to connect to Galaxy: {e}")
                 print("Retrying in 2 seconds...")
-                print("Job ")
+                print("Job")
                 time.sleep(2)

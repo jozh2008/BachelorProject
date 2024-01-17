@@ -1,14 +1,23 @@
-import requests
 import xml.etree.ElementTree as ET
-from pprint import PrettyPrinter
 
 
 class XMLParser:
     def __init__(self):
+        """
+        Initialize the XMLParser class.
+        """
         self.root = None
 
     def fetch_xml_data(self, xml_content):
-        # xml_string = '\n'.join(xml_content)
+        """
+        Parse XML content and set the root element.
+
+        Args:
+            xml_content (str): The XML content to be parsed.
+
+        Returns:
+            None
+        """
         xml_string = xml_content
 
         # Parse the XML string
@@ -18,22 +27,16 @@ class XMLParser:
             print(f"Error parsing XML: {e}")
             self.root = None
 
-    def find_protein_database_options(self, database_name):
-        list_database = []
-        if self.root is not None:
-            protein_database_params = self.root.findall(f'.//param[@name="{database_name}"]')
-
-            for param in protein_database_params:
-                options_element = param.find('options')
-                if options_element is not None:
-                    from_data_table_value = options_element.get('from_data_table')
-                    list_database.append(from_data_table_value)
-                    print(f"The value of 'from_data_table' for {param} is: {from_data_table_value}")
-                else:
-                    print(f"No 'options' element found for {param}")
-        return list_database
-
     def find_databases_names(self, database_name):
+        """
+        Find param elements with a specific 'from_data_table' attribute value.
+
+        Args:
+            database_name (str): The value to match in the 'from_data_table' attribute.
+
+        Returns:
+            list: A list of param element names matching the specified 'from_data_table' value.
+        """
         options_list = []
         if self.root is not None:
             try:
@@ -47,24 +50,7 @@ class XMLParser:
                     if options_element is not None:
                         from_data_table_value = options_element.get('from_data_table')
                         if from_data_table_value == database_name:
-                            #print(database_name, "fsklfjsldkfjsdlfk")
-                            options_list.append((param_element.get("name")))
+                            options_list.append(param_element.get("name"))
             except Exception as e:
                 print(f"Error: {e}")
         return options_list
-
-    def get_element_text(self, element_path):
-        if self.root is not None:
-            element = self.root.find(element_path)
-            if element is not None:
-                return element.text
-            else:
-                print(f"Element not found: {element_path}")
-        else:
-            print("XML data not fetched yet. Call fetch_xml_data() first.")
-
-    def write_to_file(self, data, name):
-        with open(name, 'w') as file:
-            pp = PrettyPrinter(indent=4, stream=file)
-            pp.pprint(data)
-        file.close()

@@ -1,0 +1,202 @@
+[
+  {
+    "timestamp": "2024-01-17 12:28:04",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('metacyc-rxn') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('metacyc-rxn') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('metacyc-rxn') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "metacyc-rxn",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:04",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('metacyc-pwy') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('metacyc-pwy') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('metacyc-pwy') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "metacyc-pwy",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:04",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('infogo1000') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('infogo1000') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('infogo1000') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "infogo1000",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:04",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-module') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-module') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-module') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "kegg-module",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:05",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('ec') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('ec') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('ec') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "ec",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:05",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('go') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('go') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('go') was selected (valid options: utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "go",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:05",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('pfam') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('pfam') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('pfam') was selected (valid options: utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "pfam",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:05",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('eggnog') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('eggnog') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('eggnog') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "eggnog",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:05",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-pathway') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-pathway') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-pathway') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "kegg-pathway",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:28:05",
+    "error_message": "Unexpected HTTP status code: 400: {\"err_msg\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-orthology') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\", \"err_code\": 400008, \"err_data\": {\"renaming\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-orthology') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\"}, \"param_errors\": {\"renaming\": {\"message\": \"{'names': ParameterValueError(\\\"parameter 'names': an invalid option ('kegg-orthology') was selected (valid options: utility_mapping-full-map_ko_name-3.0.0-13052021,utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2,utility_mapping-full-map_uniref90_name-3.0.0-13052021,utility_mapping-full-map_eggnog_name-3.0.0-13052021,utility_mapping-full-map_go_name-3.0.0-13052021,utility_mapping-full-map_pfam_name-3.6.0-29032023.gz,utility_mapping-full-map_ec_name-3.6.0-29032023.gz,utility_mapping-full-map_pfam_name-3.0.0-13052021,utility_mapping-full-map_ec_name-3.0.0-13052021,utility_mapping-full-map_ko_name-3.6.0-29032023.gz,utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz,utility_mapping-full-map_go_name-3.6.0-29032023.gz,utility_mapping-full-map_uniref50_name-3.0.0-13052021,utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2)\\\")}\"}}}",
+    "input": {
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "renaming": {
+        "__current_case__": 1,
+        "names": "kegg-orthology",
+        "type": "advanced"
+      },
+      "simplify": false,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  }
+]

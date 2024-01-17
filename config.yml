@@ -8,9 +8,9 @@ files:
     rename_to: "T1A_reverse"
 
 workflow:
-  url: "https://training.galaxyproject.org/training-material/topics/metagenomics/tutorials/metatranscriptomics/workflows/main_workflow.ga"
+  url: "https://training.galaxyproject.org/training-material/topics/microbiome/tutorials/metatranscriptomics/workflows/main_workflow.ga"
   destination_folder: "Workflow"
 
 server: 'https://usegalaxy.eu/'
 api_key: 'mYjQOJmxwALJESXyMerBZpfuIoA4JDI'
-history_name: 'Test Metatranscriptomic Workflow'
+history_name: 'Test Metatranscriptomic Workflow 4'

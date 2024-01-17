@@ -1,0 +1,762 @@
+[
+  {
+    "timestamp": "2024-01-17 12:27:31",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-uniref90-tol-lca-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:32",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_go_name-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:32",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_level4ec_uniref90-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:32",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_eggnog_name-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:32",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_go_uniref90-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:32",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_uniref90_name-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:32",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_pfam_name-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:32",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_go_uniref50-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_pfam_uniref50-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_uniref50_uniref90-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_pfam_uniref90-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_uniref50_name-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ko_uniref50-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_eggnog_uniref50-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_level4ec_uniref50-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:33",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-uniref50-tol-lca-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:34",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ec_name-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:34",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ko_name-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:34",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ko_uniref90-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:35",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_eggnog_uniref90-3.0.0-13052021",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:35",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_pfam_name-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:35",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-uniref90-tol-lca-3.6.0-29032023.bz2",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:35",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ko_uniref90-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:35",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ko_uniref50-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:35",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ec_name-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:35",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_uniref50_name-3.6.0-29032023.bz2",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:36",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_go_name-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:36",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_eggnog_name-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:36",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_go_uniref90-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:36",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_go_uniref50-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:37",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_pfam_uniref90-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:37",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_uniref50_uniref90-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:37",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_pfam_uniref50-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:37",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_level4ec_uniref50-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:37",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_uniref90_name-3.6.0-29032023.bz2",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:37",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_level4ec_uniref90-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:37",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_ko_name-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:38",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-uniref50-tol-lca-3.6.0-29032023.bz2",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:38",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_eggnog_uniref50-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  },
+  {
+    "timestamp": "2024-01-17 12:27:38",
+    "error_message": "Unexpected HTTP status code: 500: {\"err_msg\": \"Uncaught exception in exposed API method:\", \"err_code\": 0}",
+    "input": {
+      "function": "sum",
+      "grouping": "utility_mapping-full-map_eggnog_uniref90-3.6.0-29032023.gz",
+      "input": {
+        "src": "hda",
+        "id": "Test ids 3"
+      },
+      "precision": "3",
+      "protected": true,
+      "ungrouped": true,
+      "__workflow_invocation_uuid__": "Test workflow_invocation-uuid 3",
+      "chromInfo": "/opt/galaxy/tool-data/shared/ucsc/chrom/?.len",
+      "dbkey": "?",
+      "__input_ext": "input"
+    }
+  }
+]

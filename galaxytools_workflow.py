@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import (
     List,
     Dict,
+    Any
 )
 
 
@@ -25,6 +26,7 @@ class Tool:
         self.my_dict = {}
         self.file_path = "tool_data.json"
         self.datatables_name = []
+        self.problematic_file_ids = []  # Initialize an empty list to store file IDs
 
     def connect_to_galaxy_with_retry(self):
         while True:
@@ -75,6 +77,16 @@ class Tool:
 
         Returns:
         - dict: A dictionary representing the input specifications for the Galaxy workflow.
+        Example:
+             >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> forward_dataset_id = 'your_forward_dataset_id'
+            >>> reverse_dataset_id = 'your_reverse_dataset_id'
+            >>> inputs = instance.workflow_input(forward_dataset_id, reverse_dataset_id)
+            >>> pprint(inputs)
+            {'0': {'id': 'your_forward_dataset_id', 'src': 'hda'},
+             '1': {'id': 'your_reverse_dataset_id', 'src': 'hda'}}
         """
 
         workflow_inputs = {
@@ -187,9 +199,6 @@ class Tool:
         - List of file IDs that are not in an 'ok' state in the current Galaxy history.
         """
 
-        # Initialize an empty list to store file IDs
-        problematic_file_ids = []
-
         # Retrieve items in the current Galaxy history
         items = self.gi.histories.show_history(history_id=self.history_id, contents=True, deleted=False, visible=True)
         print(len(items))
@@ -197,41 +206,53 @@ class Tool:
         # Iterate through items and identify files not in 'ok' state
         for item in items:
             if item["type"] == "file" and item["state"] != "ok":
-                problematic_file_ids.append(item["id"])
+                self.problematic_file_ids.append(item["id"])
 
-        return problematic_file_ids
+        return self.problematic_file_ids
 
     def check_state_workflow(self, input_list):
+        """
+        Check and process the state of datasets in the input list.
+
+        Args:
+            input_list (list): List of dataset IDs.
+
+        Returns:
+            None
+        """
         lst = []
         while input_list:
             current_length = len(input_list)
             time.sleep(5)
             try:
-                pprint((current_length))
+                pprint(f"Current Length: {current_length}")
                 for i in input_list:
-                    item = (self.gi.datasets.show_dataset(dataset_id=i))
+                    item = self.gi.datasets.show_dataset(dataset_id=i)
                     item_state = item["state"]
                     if item_state != "ok":
-                        if item_state != "paused" and item_state != "error":
+                        if item_state not in {"paused", "error"}:
+                            # Append only if the state is neither "paused" nor "error"
                             lst.append(i)
                     else:
 
                         gt_runner = GalaxyToolRunner(gi=self.gi, history_id=self.history_id)
                         tool_id, tool_input = gt_runner.fetch_dataset_details(item=item)
 
+                        # Do it for every tool just once
                         if tool_id not in self.my_dict:
                             self.my_dict[tool_id] = tool_input
                             pprint(self.my_dict)
 
+                            # Calculate the xml from galaxy webpage of tool
                             url_link = (self.get_tool_input_options_link(tool_id=tool_id))
                             tool_name = self.get_tool_input_options_name(tool_id=tool_id)
                             pprint(tool_name)
                             pprint(url_link)
                             html_extractor = HTMLContentExtractor()
                             html_extractor.capture_html_content(url=url_link)
-
                             formatted_xml = html_extractor.extract_and_prettify_xml()
 
+                            # If it hats datatable, run it multithreaded
                             if "<options from_data_table" in formatted_xml:
                                 thread = threading.Thread(
                                     target=self.run_tool_multithreaded,
@@ -244,15 +265,16 @@ class Tool:
                 print("Retrying in 2 seconds...")
                 print("workflow_connection")
                 time.sleep(2)  # Wait for 2 seconds before retrying
-                lst = self.workflow_show_invocation()
+
+                # Check all problematic file ids again
+                lst = self.problematic_file_ids
                 print(len(lst), "after exception in workflow_connection")
             finally:
                 # Update input_list to the remaining items after the loop
-                print("round", len(lst))
                 input_list = lst
-                lst = []
+                print("Round", len(input_list))
 
-        pprint("finished")
+        pprint("Finished")
         thread.join()
 
     def run_tool_multithreaded(self, formatted_xml: str, tool_id: str, tool_input, tool_name: str):
@@ -389,7 +411,7 @@ class Tool:
         except ConnectionError:
             self.connect_to_galaxy_with_retry()
 
-    def get_tool_input_options(self, tool_id):
+    def get_tool_input_options(self, tool_id: str):
         """
         Get detailed input options for a specified tool.
 
@@ -405,7 +427,7 @@ class Tool:
         input_options = tool_details.get('inputs', {})
         return input_options
 
-    def get_tool_input_options_link(self, tool_id):
+    def get_tool_input_options_link(self, tool_id: str):
         """
         Retrieve the link details for input options of a given tool.
 
@@ -416,6 +438,14 @@ class Tool:
 
         Returns:
             str: The link details for input options.
+        Example:
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> tool_id = 'toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/4.0+galaxy1'
+            >>> link_details = instance.get_tool_input_options_link(tool_id)
+            >>> print(link_details)
+            https://usegalaxy.eu//tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Flparsons%2Fcutadapt%2Fcutadapt%2F4.0%2Bgalaxy1
         """
 
         # Retrieve tool details using the Galaxy API
@@ -427,7 +457,7 @@ class Tool:
         # Return the input options link as a string
         return f"{self.server}{input_options_link}"
 
-    def get_tool_input_options_name(self, tool_id):
+    def get_tool_input_options_name(self, tool_id: str):
         """
         Retrieve the name of a tool and its input options using the Galaxy API.
 
@@ -436,6 +466,14 @@ class Tool:
 
         Returns:
             str: The name of the tool.
+        Example:
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> tool_id = 'toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/4.0+galaxy1'
+            >>> tool_name = instance.get_tool_input_options_name(tool_id)
+            >>> print(tool_name)
+            Cutadapt
         """
         # Retrieve tool details using the Galaxy API
         tool_details = self.gi.tools.show_tool(tool_id=tool_id, io_details=True, link_details=True)
@@ -445,25 +483,65 @@ class Tool:
 
         return tool_name
 
-    def get_databases(self, inputs):
+    def extract_database_names(self, inputs: List) -> List:
         """
-        json_extract returns for every database a list with name, database_name, selected
-        return every database_name in a list
+        Extracts and returns a list of database names from a list containing
+        information about each database. The input list should follow the pattern
+        [name, database_name, selected, ...] for each database.
+
+        Args:
+        - inputs (List): List containing information about databases.
+
+        Returns:
+        - List: List of database names.
+
+        Example:
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> sample_inputs = [
+            ...     'rfam-5s-database-id98', '2.1b-rfam-5s-database-id98', False,
+            ...     'silva-arc-23s-id98', '2.1b-silva-arc-23s-id98', False,
+            ...     'silva-euk-28s-id98', '2.1b-silva-euk-28s-id98', False,
+            ...     'silva-bac-23s-id98', '2.1b-silva-bac-23s-id98', False,
+            ...     'silva-euk-18s-id95', '2.1b-silva-euk-18s-id95', False,
+            ...     'silva-bac-16s-id90', '2.1b-silva-bac-16s-id90', False,
+            ...     'rfam-5.8s-database-id98', '2.1b-rfam-5.8s-database-id98', False,
+            ...     'silva-arc-16s-id95', '2.1b-silva-arc-16s-id95', False
+            ... ]
+            >>> result = instance.extract_database_names(sample_inputs)
+            >>> pprint(result)
+            ['2.1b-rfam-5s-database-id98',
+             '2.1b-silva-arc-23s-id98',
+             '2.1b-silva-euk-28s-id98',
+             '2.1b-silva-bac-23s-id98',
+             '2.1b-silva-euk-18s-id95',
+             '2.1b-silva-bac-16s-id90',
+             '2.1b-rfam-5.8s-database-id98',
+             '2.1b-silva-arc-16s-id95']
         """
         return [inputs[i] for i in range(1, len(inputs), 3)]
 
-    def remove_duplicate(self, original_list):
+    def remove_duplicate(self, original_list: List):
         """
         Remove duplicates from a list while preserving the original order.
 
         This function takes a list as input and returns a new list with duplicate elements removed,
         preserving the original order of elements.
 
-        Parameters:
+        Args:
         - original_list (list): The input list containing elements, including duplicates.
 
         Returns:
         - list: A new list with duplicate elements removed, preserving the original order.
+        Example:
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> input_list = [1, 2, 3, 2, 4, 5, 1]
+            >>> result = instance.remove_duplicate(input_list)
+            >>> print(result)
+            [1, 2, 3, 4, 5]
         """
 
         unique_list = []
@@ -475,20 +553,7 @@ class Tool:
 
         return unique_list
 
-    def get_flattened_list(self, original_list):
-        """
-        Flatten a list of lists.
-
-         Parameters:
-            - original_list: The original list of lists.
-
-        Returns:
-            - flattened_list: The flattened list.
-        """
-        flattened_list = [element for sublist in original_list[0] for element in sublist]
-        return flattened_list
-
-    def extract_values_from_nested_json(self, json_object, target_key):
+    def extract_values_from_nested_json(self, json_object: Any, target_key):
         """
         Recursively fetch values from nested JSON based on a specified key.
 
@@ -552,25 +617,34 @@ class Tool:
 
         return original
 
-    def process_data(self, keys, inputs_options):
+    def process_data(self, keys: List, inputs_options: Any):
+        """
+        Process data for a list of keys and extract database names from nested JSON.
+
+        Parameters:
+        - keys (List): A list of keys to extract values from the nested JSON.
+        - inputs_options (Any): The nested JSON structure containing the data.
+
+        Returns:
+        Tuple[Dict, List]: A tuple containing a dictionary with processed data for each key
+        and a list of multiple values encountered during extraction
+        """
         result_dict = {}
         multiple_values = []
         for key in keys:
             # Extract values based on the key
             extracted_values, multiple_values = self.extract_values_from_nested_json(inputs_options, key)
+            print(extracted_values)
+
             # Check if the extracted values are not empty
             if extracted_values:
-                flattened_values = self.get_flattened_list(extracted_values)
-                if key == "selector":
-                    self.json_input = (self.flatten(extracted_values))
-                databases = self.get_databases(flattened_values)
-
-                # Store databases in the result_dict
+                flattened_values = self.flatten(extracted_values)
+                databases = self.remove_duplicate(original_list=self.extract_database_names(inputs=flattened_values))
                 result_dict[key] = databases
 
         return result_dict, multiple_values
 
-    def update_values(self, dic, key, new_values):
+    def update_values(self, dic: Dict, key: str, new_values: Any):
         """
         Recursively updates values in a nested dictionary based on a specified key.
 
@@ -581,6 +655,15 @@ class Tool:
 
         Returns:
             dict: The updated dictionary.
+
+        Example:
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> original_dict = {'a': 1, 'b': {'c': 2, 'd': {'e': 3}}}
+            >>> updated_dict = instance.update_values(original_dict, 'd', {'new_value': 4})
+            >>> print(updated_dict)
+            {'a': 1, 'b': {'c': 2, 'd': {'new_value': 4}}}
         """
         # Make a deep copy to preserve the original dictionary
         dictionary = copy.deepcopy(dic)
@@ -600,53 +683,6 @@ class Tool:
 
         return dictionary
 
-    def find_values_in_nested_json(self, json_object, target_key, is_object: str = True):
-        """
-        Recursively searches for values of a specified key in a nested JSON object.
-
-        Args:
-            json_object (dict or list): The JSON object to search.
-            target_key (str): The key to search for in the JSON object.
-
-        Returns:
-            list: A list of values corresponding to the specified key in the JSON object.
-        """
-        result_values = []
-
-        def recursive_search(obj, result_values, key):
-            """
-            Recursively searches for values of key in JSON tree.
-
-            Args:
-                obj (dict or list): The current JSON object or list.
-                result_values (list): The list to store found values.
-                key (str): The target key to search for.
-
-            Returns:
-                list: A list of values corresponding to the specified key.
-            """
-            if isinstance(obj, dict):
-                for k, v in obj.items():
-                    if isinstance(v, (dict, list)):
-                        recursive_search(v, result_values, key)
-                    if (is_object is True):
-                        if v == key:
-                            result_values.append(obj)
-                    else:
-                        if isinstance(v, str):
-                            if key in v and k == "name":
-                                result_values.append(v)
-                        else:
-                            if k == key:
-                                result_values.append(v)
-            elif isinstance(obj, list):
-                for item in obj:
-                    recursive_search(item, result_values, key)
-            return result_values
-
-        found_values = recursive_search(json_object, result_values, target_key)
-        return found_values
-
     def flatten(self, nested_list: List):
         """
         Flatten a nested list recursively.
@@ -658,6 +694,14 @@ class Tool:
 
         Returns:
         - list: A flattened list obtained by recursively flattening the input list.
+        Example:
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> input_nested_list = [1, [2, [3, 4], 5], 6]
+            >>> result = instance.flatten(input_nested_list)
+            >>> print(result)
+            [1, 2, 3, 4, 5, 6]
         """
 
         flat_list = []
@@ -718,6 +762,18 @@ class Tool:
 
         Returns:
             list: A list of dictionaries representing different combinations of key-value pairs.
+        Example:
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> instance = Tool(server, api_key)
+            >>> original_dict = {'a': [1, 2], 'b': [3, 4], 'c': [5, 6]}
+            >>> exclude_keys = ['a']
+            >>> combinations = instance.generate_combinations(original_dict, exclude_keys)
+            >>> pprint(combinations)
+            [{'a': [1, 2], 'b': 3, 'c': 5},
+             {'a': [1, 2], 'b': 3, 'c': 6},
+             {'a': [1, 2], 'b': 4, 'c': 5},
+             {'a': [1, 2], 'b': 4, 'c': 6}]
         """
         # Prepare an empty dictionary to store the excluded key-value pairs
         excluded_dict = {}
@@ -835,8 +891,6 @@ class Tool:
         while True:
             try:
                 job_info = self.gi.jobs.show_job(job_id)
-                print(job_info)
-                print(self.gi.jobs.wait_for_job(job_id=job_id, interval=5, check=True))
 
                 if job_info['state'] not in {'queued', 'running', 'new'}:
                     return job_info['state']

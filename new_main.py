@@ -86,7 +86,11 @@ def main():
     file_forward, file_reverse, file_workflow = initialize_workflow(config=config)
     file_forward = "Upload_files/newfile_T1A_forward"
     file_reverse = "Upload_files/newfile_T1A_reverse"
-    workflow = GalaxyWorkflow(config['server'], config['api_key'], config['history_name'])
+
+    server = config['server']
+    api_key = config['api_key']
+    history_name = config['history_name']
+    workflow = GalaxyWorkflow(server=server, api_key=api_key, history_name=history_name)
     workflow.get_history()
 
     workflow.define_tools(file_forward=file_forward, file_reverse=file_reverse, file_workflow=file_workflow)

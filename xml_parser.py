@@ -19,6 +19,7 @@ class XMLParser:
             None
         """
         xml_string = xml_content
+        print(type(xml_string))
 
         # Parse the XML string
         try:
@@ -42,7 +43,6 @@ class XMLParser:
             try:
                 # XPath expression to find all param elements with a specific from_data_table value
                 param_elements = self.root.findall(".//param")
-
                 # Iterate through param elements
                 for param_element in param_elements:
                     # Check if the param has the correct from_data_table attribute

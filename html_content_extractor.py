@@ -1,33 +1,38 @@
 from bs4 import BeautifulSoup
-import subprocess
+import requests
 
 
 class HTMLContentExtractor:
-    def __init__(self, javascript_file='captureToolSource.js'):
+    def __init__(self):
         """
         Initialize the HTMLContentExtractor class.
 
-        Args:
-            javascript_file (str): The file containing JavaScript code for capturing HTML content.
         """
-        self.javascript_file = javascript_file
         self.html_content = None
 
     def capture_html_content(self, url):
         """
-        Capture HTML content from a specified URL using a JavaScript file.
+        Capture HTML content from the specified URL.
 
-        Args:
-            url (str): The URL from which to capture HTML content.
+        Parameters:
+        - url (str): The URL from which to capture HTML content.
 
-        Returns:
-            None
+        Raises:
+        - requests.exceptions.RequestException: If there is an error while making the request.
         """
+
         try:
-            result_from_js = subprocess.check_output(['node', self.javascript_file, url], text=True)
-            self.html_content = result_from_js
-        except subprocess.CalledProcessError as e:
-            print(f'Error running JavaScript code: {e}')
+            # Make a GET request to the specified URL
+            response = requests.get(url=url)
+
+            # Check if the request was successful (status code 200)
+            response.raise_for_status()
+
+            # Assign the HTML content to the instance variable
+            self.html_content = response.text
+        except requests.exceptions.RequestException as e:
+            # Handle any request-related exceptions
+            print(f'Error making request: {e}')
 
     def extract_and_prettify_xml(self, class_name='language-xml'):
         """
@@ -40,13 +45,11 @@ class HTMLContentExtractor:
             str: Prettified XML content.
         """
         if self.html_content:
-            soup = BeautifulSoup(self.html_content, 'html.parser')
-            pre_element = soup.find('pre', class_=class_name)
+            soup = BeautifulSoup(self.html_content, 'xml')
+            if soup:
+                xml_code = soup.prettify()
 
-            if pre_element:
-                xml_code = pre_element.text.strip()
-                formatted_xml = BeautifulSoup(xml_code, 'xml').prettify()
-                return formatted_xml
+                return xml_code
             else:
                 print(f'No element with class "{class_name}" found.')
         else:

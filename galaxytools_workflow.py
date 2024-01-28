@@ -20,6 +20,7 @@ from typing import (
 class Tool:
     def __init__(self, server: str, api_key: str) -> None:
         self.gi = galaxy.GalaxyInstance(url=server, key=api_key)
+        self.api_key = api_key
         self.server = server
         self.history_id = ""
         self.json_input = []
@@ -78,8 +79,8 @@ class Tool:
         Returns:
         - dict: A dictionary representing the input specifications for the Galaxy workflow.
         Example:
-             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> server = 'https://usegalaxy.eu/'
+            >>> api_key = "your api key"
             >>> instance = Tool(server, api_key)
             >>> forward_dataset_id = 'your_forward_dataset_id'
             >>> reverse_dataset_id = 'your_reverse_dataset_id'
@@ -234,7 +235,6 @@ class Tool:
                             # Append only if the state is neither "paused" nor "error"
                             lst.append(i)
                     else:
-
                         gt_runner = GalaxyToolRunner(gi=self.gi, history_id=self.history_id)
                         tool_id, tool_input = gt_runner.fetch_dataset_details(item=item)
 
@@ -273,6 +273,7 @@ class Tool:
                 # Update input_list to the remaining items after the loop
                 input_list = lst
                 print("Round", len(input_list))
+                lst = []
 
         pprint("Finished")
         thread.join()
@@ -292,6 +293,7 @@ class Tool:
         """
         # Extract databases and process input options
         unique_databases = self.remove_duplicate(self.find_databases_in_xml(xml_content=formatted_xml))
+        pprint(unique_databases)
         inputs_options = self.get_tool_input_options(tool_id=tool_id)
         dictionary, multiple_list = self.process_data(unique_databases, inputs_options=inputs_options)
         multiple_list = self.remove_duplicate(multiple_list)
@@ -440,22 +442,22 @@ class Tool:
             str: The link details for input options.
         Example:
             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> api_key = 'YOUR_API_KEY' # Replace 'API_KEY_PLACEHOLDER' with the actual API key
             >>> instance = Tool(server, api_key)
             >>> tool_id = 'toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/4.0+galaxy1'
             >>> link_details = instance.get_tool_input_options_link(tool_id)
             >>> print(link_details)
-            https://usegalaxy.eu//tool_runner?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Flparsons%2Fcutadapt%2Fcutadapt%2F4.0%2Bgalaxy1
+            https://usegalaxy.eu/api/tools/toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/4.6+galaxy1/raw_tool_source
         """
 
         # Retrieve tool details using the Galaxy API
         tool_details = self.gi.tools.show_tool(tool_id=tool_id, io_details=True, link_details=True)
 
         # Extract input options link from the tool details
-        input_options_link = tool_details.get('link', {})
 
-        # Return the input options link as a string
-        return f"{self.server}{input_options_link}"
+        tool_id = tool_details.get("id", {})
+        link = f'{self.server}api/tools/{tool_id}/raw_tool_source'
+        return link
 
     def get_tool_input_options_name(self, tool_id: str):
         """
@@ -468,7 +470,7 @@ class Tool:
             str: The name of the tool.
         Example:
             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> api_key  = 'YOUR_API_KEY' # Replace 'API_KEY_PLACEHOLDER' with the actual API key
             >>> instance = Tool(server, api_key)
             >>> tool_id = 'toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/4.0+galaxy1'
             >>> tool_name = instance.get_tool_input_options_name(tool_id)
@@ -497,7 +499,7 @@ class Tool:
 
         Example:
             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> api_key = 'YOUR_API_KEY' # Replace 'API_KEY_PLACEHOLDER' with the actual API key
             >>> instance = Tool(server, api_key)
             >>> sample_inputs = [
             ...     'rfam-5s-database-id98', '2.1b-rfam-5s-database-id98', False,
@@ -536,7 +538,7 @@ class Tool:
         - list: A new list with duplicate elements removed, preserving the original order.
         Example:
             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> api_key = 'YOUR_API_KEY' # Replace 'API_KEY_PLACEHOLDER' with the actual API key
             >>> instance = Tool(server, api_key)
             >>> input_list = [1, 2, 3, 2, 4, 5, 1]
             >>> result = instance.remove_duplicate(input_list)
@@ -634,7 +636,6 @@ class Tool:
         for key in keys:
             # Extract values based on the key
             extracted_values, multiple_values = self.extract_values_from_nested_json(inputs_options, key)
-            print(extracted_values)
 
             # Check if the extracted values are not empty
             if extracted_values:
@@ -658,7 +659,7 @@ class Tool:
 
         Example:
             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> api_key = 'YOUR_API_KEY' # Replace 'API_KEY_PLACEHOLDER' with the actual API key
             >>> instance = Tool(server, api_key)
             >>> original_dict = {'a': 1, 'b': {'c': 2, 'd': {'e': 3}}}
             >>> updated_dict = instance.update_values(original_dict, 'd', {'new_value': 4})
@@ -696,7 +697,7 @@ class Tool:
         - list: A flattened list obtained by recursively flattening the input list.
         Example:
             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> api_key = 'YOUR_API_KEY' # Replace 'API_KEY_PLACEHOLDER' with the actual API key
             >>> instance = Tool(server, api_key)
             >>> input_nested_list = [1, [2, [3, 4], 5], 6]
             >>> result = instance.flatten(input_nested_list)
@@ -764,7 +765,7 @@ class Tool:
             list: A list of dictionaries representing different combinations of key-value pairs.
         Example:
             >>> server = 'https://usegalaxy.eu/'
-            >>> api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+            >>> api_key = 'YOUR_API_KEY' # Replace 'API_KEY_PLACEHOLDER' with the actual API key
             >>> instance = Tool(server, api_key)
             >>> original_dict = {'a': [1, 2], 'b': [3, 4], 'c': [5, 6]}
             >>> exclude_keys = ['a']

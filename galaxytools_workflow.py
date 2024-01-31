@@ -8,7 +8,7 @@ import copy
 from itertools import product
 from xml_parser import XMLParser
 from html_content_extractor import HTMLContentExtractor
-from galaxy_tool_runner import GalaxyToolRunner
+from dataset_modification import DatasetModification
 from datetime import datetime
 from typing import (
     List,
@@ -17,13 +17,12 @@ from typing import (
 )
 
 
-class Tool:
+class GalaxyWorkflow:
     def __init__(self, server: str, api_key: str) -> None:
         self.gi = galaxy.GalaxyInstance(url=server, key=api_key)
         self.api_key = api_key
         self.server = server
         self.history_id = ""
-        self.json_input = []
         self.my_dict = {}
         self.file_path = "tool_data.json"
         self.datatables_name = []
@@ -235,7 +234,7 @@ class Tool:
                             # Append only if the state is neither "paused" nor "error"
                             lst.append(i)
                     else:
-                        gt_runner = GalaxyToolRunner(gi=self.gi, history_id=self.history_id)
+                        gt_runner = DatasetModification(gi=self.gi, history_id=self.history_id)
                         tool_id, tool_input = gt_runner.fetch_dataset_details(item=item)
 
                         # Do it for every tool just once

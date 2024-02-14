@@ -5,8 +5,6 @@ from file_downloader import FileDownloader
 import sys
 
 
-
-
 class Initialize:
     def __init__(self, server, api_key, history_name):
         self.server = server

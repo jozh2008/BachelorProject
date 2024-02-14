@@ -240,7 +240,6 @@ class GalaxyWorkflow:
                         # Do it for every tool just once
                         if tool_id not in self.my_dict:
                             self.my_dict[tool_id] = tool_input
-                            pprint(self.my_dict)
 
                             # Calculate the xml from galaxy webpage of tool
                             url_link = (self.get_tool_input_options_link(tool_id=tool_id))
@@ -292,7 +291,6 @@ class GalaxyWorkflow:
         """
         # Extract databases and process input options
         unique_databases = self.remove_duplicate(self.find_databases_in_xml(xml_content=formatted_xml))
-        pprint(unique_databases)
         inputs_options = self.get_tool_input_options(tool_id=tool_id)
         dictionary, multiple_list = self.process_data(unique_databases, inputs_options=inputs_options)
         multiple_list = self.remove_duplicate(multiple_list)

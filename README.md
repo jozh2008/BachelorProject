@@ -1,18 +1,6 @@
 # BachelorProject
 Bachelor Project in Bioinformatic
 
-Program detects incompatibilites between installed Galaxy tools
+Title: Detection of incompatibilities between installed Galaxy tools
 
-Where can we use it?
-
-    1)Solve problems with different versions of databases
-    2)Check to see if an error occurs after the release of a new version
-
-Takes datasets and workflow given in the config file.
-Runs the workflow with the datasets as input. Check if a tool has as input a locally cached database.
-
-If so, generate all combination of the tool input.
-
-Run every combination of tool input on the Galaxy server.
-
-If an error occurs, store the input with a timestemp in a file. 
+This bachelor project aims to develop a tool within the Galaxy bioinformatics platform that identifies incompatibilities between installed tools. The program focuses on addressing issues arising from different database versions and potential errors following the release of new tool versions. By utilizing a configuration file containing datasets and workflows, the tool dynamically analyzes input requirements, checking for locally cached databases. In the presence of such databases, the program generates all possible combinations of tool inputs and executes them on the Galaxy server. In case of errors, the input configurations are logged with timestamps for further analysis and troubleshooting.

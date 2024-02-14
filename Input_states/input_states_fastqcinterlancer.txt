@@ -1,6 +1,0 @@
-{   'reads': {   '__current_case__': 0,
-                 'input1_file': {   'values': [   {   'id': '4838ba20a6d86765a6ee304a45d70260',
-                                                      'src': 'hda'}]},
-                 'input2_file': {   'values': [   {   'id': '4838ba20a6d86765a6ee304a45d70260',
-                                                      'src': 'hda'}]},
-                 'reads_selector': 'paired'}}

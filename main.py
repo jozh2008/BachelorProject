@@ -2,9 +2,9 @@ from galaxytools_workflow import *
 import multiprocessing
 import yaml
 from file_downloader import FileDownloader
+import sys
 
-server = 'https://usegalaxy.eu/'
-api_key = "mYjQOJmxwALJESXyMerBZpfuIoA4JDI"
+
 
 
 class Initialize:
@@ -81,14 +81,12 @@ def initialize_workflow(config):
     return file_path
 
 
-def main():
+def main(server, api_key):
     config = load_config()
     file_forward, file_reverse, file_workflow = initialize_workflow(config=config)
     file_forward = "Upload_files/newfile_T1A_forward"
     file_reverse = "Upload_files/newfile_T1A_reverse"
 
-    server = config['server']
-    api_key = config['api_key']
     history_name = config['history_name']
     workflow = Initialize(server=server, api_key=api_key, history_name=history_name)
     workflow.get_history()
@@ -105,7 +103,14 @@ def check_connection(server: str, api_key: str):
 
 
 if __name__ == '__main__':
-    process1 = multiprocessing.Process(target=main)
+    # Check if the API key is provided as a command-line argument
+    if len(sys.argv) < 3 or sys.argv[1] != '--key':
+        print("Error: API key not provided. Use python3 main.py --key {your_key}")
+        sys.exit(1)
+
+    api_key = sys.argv[2]
+    server = 'https://usegalaxy.eu/'
+    process1 = multiprocessing.Process(target=main, args=[server, api_key])
     process2 = multiprocessing.Process(target=check_connection, args=[server, api_key])
     process1.start()
     process2.start()
